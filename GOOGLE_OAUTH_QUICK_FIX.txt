@@ -1,0 +1,46 @@
+🔐 GOOGLE OAUTH REDIRECT URI - QUICK FIX
+========================================
+
+YOUR SETUP:
+- Frontend: Vercel (https://e-commerce-platform.vercel.app)
+- Backend: Render (https://e-commerce-platform-4a65.onrender.com)
+- Google OAuth: Client-side (no backend redirect needed)
+
+PROBLEM:
+- redirect_uri_mismatch error
+- Google Console still has localhost URLs
+
+SOLUTION:
+Go to Google Cloud Console → APIs & Services → Credentials → Edit OAuth Client
+
+ADD THESE URLS:
+
+Authorized JavaScript Origins:
+✓ http://localhost:5173
+✓ http://localhost:3000
+✓ https://e-commerce-platform.vercel.app
+
+Authorized Redirect URIs:
+✓ http://localhost:5173
+✓ http://localhost:3000
+✓ https://e-commerce-platform.vercel.app
+
+(Replace "e-commerce-platform.vercel.app" with YOUR actual Vercel URL)
+
+THEN:
+1. Click SAVE
+2. Wait 5-10 minutes
+3. Clear browser cache (Ctrl+Shift+Delete)
+4. Test Google login
+
+IMPORTANT:
+- Use EXACT URLs (no trailing slash)
+- Both sections need same URLs
+- Wait for Google to update
+- Test in incognito mode first
+
+YOUR VERCEL URL:
+Find it at: https://vercel.com/dashboard → Your Project
+Or check browser address bar when you visit your site
+
+DONE! ✅
