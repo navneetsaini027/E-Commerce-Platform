@@ -396,6 +396,49 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
                   {cat}
                 </button>
               ))}
+
+              {/* Login/Logout in Mobile Menu */}
+              <div style={{ borderTop: `1px solid ${theme.colors.border}`, paddingTop: 16, marginTop: 8 }}>
+                {!user ? (
+                  <button
+                    onClick={() => { onAuthOpen(); setMobileMenuOpen(false); }}
+                    style={{
+                      width: '100%', padding: '12px', fontSize: 14, fontWeight: 700,
+                      letterSpacing: '0.06em', textTransform: 'uppercase',
+                      background: '#E50010', color: '#fff', border: 'none',
+                      cursor: 'pointer', borderRadius: 4,
+                    }}
+                  >
+                    Login / Sign Up
+                  </button>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: theme.colors.text }}>
+                      👋 Hello, {user.name.split(' ')[0]}!
+                    </p>
+                    <button
+                      onClick={() => { onUserDashboard(); setMobileMenuOpen(false); }}
+                      style={{
+                        width: '100%', padding: '10px', fontSize: 13, fontWeight: 600,
+                        background: 'transparent', color: theme.colors.text,
+                        border: `1px solid ${theme.colors.border}`, cursor: 'pointer', borderRadius: 4,
+                      }}
+                    >
+                      My Account
+                    </button>
+                    <button
+                      onClick={() => { onLogout(); setMobileMenuOpen(false); }}
+                      style={{
+                        width: '100%', padding: '10px', fontSize: 13, fontWeight: 600,
+                        background: 'transparent', color: '#E50010',
+                        border: `1px solid #E50010`, cursor: 'pointer', borderRadius: 4,
+                      }}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </motion.div>
         )}
