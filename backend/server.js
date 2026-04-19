@@ -6,8 +6,8 @@ const cors = require('cors');
 const app = express();
 
 app.use(cors({ origin: '*', credentials: false }));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Health check route - Render uses this
 app.get('/', (req, res) => res.json({ message: 'E-Commerce API running ✅', status: 'ok' }));
