@@ -1,0 +1,56 @@
+# 🚀 Quick GitHub Push Commands
+
+# Step 1: Navigate to project
+cd aashirwad-fashion
+
+# Step 2: Initialize Git (if not done)
+git init
+
+# Step 3: Add all files
+git add .
+
+# Step 4: Create commit
+git commit -m "Initial commit: Premium Fashion E-Commerce Platform
+
+✨ Features:
+- MERN Stack (MongoDB, Express, React, Node.js)
+- Dark/Light mode with animated starry night
+- Spin the wheel rewards system
+- Google OAuth authentication
+- Admin dashboard with analytics
+- Product management & reviews
+- Shopping cart & wishlist
+- Order management system
+- Real-time notifications
+- Recently viewed products
+- Quick view modal
+- Responsive design
+- And 50+ premium features!
+
+🛠️ Tech Stack:
+Frontend: React 18, Vite, Framer Motion, Axios
+Backend: Node.js, Express, MongoDB, JWT
+Features: OAuth, Email, Payments Ready
+
+📦 Includes:
+- Complete documentation
+- API documentation
+- Deployment guide
+- Environment templates
+- MIT License"
+
+# Step 5: Create GitHub repo at https://github.com/new
+# Then connect:
+git remote add origin https://github.com/YOUR_USERNAME/aashirwad-fashion.git
+
+# Step 6: Push to GitHub
+git branch -M main
+git push -u origin main
+
+# Done! 🎉
+# Your project is now on GitHub!
+
+# Future updates:
+git add .
+git commit -m "Your update message"
+git push

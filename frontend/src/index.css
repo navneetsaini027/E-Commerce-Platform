@@ -1,0 +1,95 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --white: #FFFFFF;
+  --black: #000000;
+  --red: #E50010;
+  --gray-light: #f5f5f5;
+  --gray-mid: #e0e0e0;
+  --gray-text: #767676;
+  --font: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  
+  /* Theme colors - will be overridden by ThemeContext */
+  --color-primary: #000;
+  --color-secondary: #E50010;
+  --color-background: #fff;
+  --color-surface: #fff;
+  --color-text: #000;
+  --color-textSecondary: #767676;
+  --color-border: #e0e0e0;
+  --color-shadow: rgba(0,0,0,0.1);
+  --color-overlay: rgba(0,0,0,0.5);
+  --color-success: #4CAF50;
+  --color-warning: #FF9800;
+  --color-error: #F44336;
+  --color-info: #2196F3;
+  --gradient-primary: linear-gradient(135deg, #E50010, #FF4444);
+  --gradient-hero: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--color-background);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+button {
+  font-family: var(--font);
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input, textarea, select {
+  font-family: var(--font);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--color-background); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-textSecondary); }
+
+/* Dark mode specific enhancements */
+body[data-theme="dark"] {
+  background: linear-gradient(180deg, #0a0e27 0%, #16213e 50%, #0f1729 100%);
+}
+
+/* Smooth transitions for theme switching */
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Glow effects for dark mode */
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(255, 107, 107, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(255, 107, 107, 0.8); }
+}
+
+/* Shimmer effect */
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
