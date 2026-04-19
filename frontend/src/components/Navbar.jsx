@@ -215,55 +215,64 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
 
         {/* Icons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <AnimatePresence>
-            {searchOpen && (
-              <motion.div
-                initial={{ width: 0, opacity: 0 }}
-                animate={{ width: 200, opacity: 1 }}
-                exit={{ width: 0, opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                style={{ overflow: 'hidden' }}
-              >
-                <input
-                  autoFocus
-                  value={searchQuery}
-                  onChange={e => handleSearchChange(e.target.value)}
-                  placeholder="Search products..."
-                  style={{
-                    width: '100%', border: 'none', borderBottom: `1px solid ${theme.colors.text}`,
-                    outline: 'none', fontSize: 13, padding: '4px 0',
-                    background: 'transparent', color: theme.colors.text,
-                    transition: 'border-color 0.3s ease, color 0.3s ease',
-                  }}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Search - hide on mobile */}
+          <div className="desktop-only">
+            <AnimatePresence>
+              {searchOpen && (
+                <motion.div
+                  initial={{ width: 0, opacity: 0 }}
+                  animate={{ width: 200, opacity: 1 }}
+                  exit={{ width: 0, opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <input
+                    autoFocus
+                    value={searchQuery}
+                    onChange={e => handleSearchChange(e.target.value)}
+                    placeholder="Search products..."
+                    style={{
+                      width: '100%', border: 'none', borderBottom: `1px solid ${theme.colors.text}`,
+                      outline: 'none', fontSize: 13, padding: '4px 0',
+                      background: 'transparent', color: theme.colors.text,
+                      transition: 'border-color 0.3s ease, color 0.3s ease',
+                    }}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <button onClick={handleSearchToggle} style={{ padding: 8 }} aria-label="Search">
+              {searchOpen ? <X size={18} color={theme.colors.text} /> : <Search size={18} color={theme.colors.text} />}
+            </button>
+          </div>
 
-          <button onClick={handleSearchToggle} style={{ padding: 8 }} aria-label="Search">
-            {searchOpen ? <X size={18} color={theme.colors.text} /> : <Search size={18} color={theme.colors.text} />}
-          </button>
-
+          {/* Theme toggle */}
           <button
             onClick={toggleTheme}
             style={{ padding: 8 }}
             aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-            title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
           >
             <motion.div initial={false} animate={{ rotate: isDark ? 180 : 0 }} transition={{ duration: 0.3 }}>
               {isDark ? <Sun size={18} color={theme.colors.text} /> : <Moon size={18} color={theme.colors.text} />}
             </motion.div>
           </button>
 
-          {user && <NotificationCenter user={user} />}
+          {/* Notifications - desktop only */}
+          <div className="desktop-only">
+            {user && <NotificationCenter user={user} />}
+          </div>
 
-          {user && (
-            <button onClick={onOrdersOpen} style={{ padding: 8 }} aria-label="My Orders" title="My Orders">
-              <Package size={18} color={theme.colors.text} />
-            </button>
-          )}
+          {/* Orders - desktop only */}
+          <div className="desktop-only">
+            {user && (
+              <button onClick={onOrdersOpen} style={{ padding: 8 }} aria-label="My Orders">
+                <Package size={18} color={theme.colors.text} />
+              </button>
+            )}
+          </div>
 
-          <button onClick={onWishlistOpen} style={{ padding: 8, position: 'relative' }} aria-label="Wishlist" title="Wishlist">
+          {/* Wishlist */}
+          <button onClick={onWishlistOpen} style={{ padding: 8, position: 'relative' }} aria-label="Wishlist">
             <Heart size={18} color={theme.colors.text} />
             {wishlistCount > 0 && (
               <motion.span key={wishlistCount} initial={{ scale: 0 }} animate={{ scale: 1 }} style={{
@@ -271,20 +280,23 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
                 background: '#E50010', color: '#fff',
                 borderRadius: '50%', width: 16, height: 16,
                 fontSize: 10, fontWeight: 700,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 {wishlistCount > 99 ? '99+' : wishlistCount}
               </motion.span>
             )}
           </button>
 
-          {/* Admin settings — only for admin */}
-          {user?.role === 'admin' && (
-            <button onClick={onAdminToggle} style={{ padding: 8 }} aria-label="Admin Panel" title="Admin Panel">
-              <Settings size={18} color="#E50010" />
-            </button>
-          )}
+          {/* Admin - desktop only */}
+          <div className="desktop-only">
+            {user?.role === 'admin' && (
+              <button onClick={onAdminToggle} style={{ padding: 8 }} aria-label="Admin Panel">
+                <Settings size={18} color="#E50010" />
+              </button>
+            )}
+          </div>
 
+          {/* Cart */}
           <button onClick={onCartOpen} style={{ padding: 8, position: 'relative' }} aria-label="Shopping bag">
             <ShoppingBag size={18} color={theme.colors.text} />
             {cartCount > 0 && (
@@ -293,74 +305,74 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
                 background: '#E50010', color: '#fff',
                 borderRadius: '50%', width: 16, height: 16,
                 fontSize: 10, fontWeight: 700,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 {cartCount > 99 ? '99+' : cartCount}
               </motion.span>
             )}
           </button>
 
-          {/* Login/Signup — always at the far right, fully rounded */}
-          {!user ? (
-            <motion.button
-              onClick={onAuthOpen}
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.96 }}
-              style={{
-                background: '#E50010', color: '#fff',
-                padding: '8px 18px', fontSize: 11, fontWeight: 700,
-                letterSpacing: '0.08em', textTransform: 'uppercase',
-                border: 'none', cursor: 'pointer',
-                borderRadius: 999,
-                display: 'flex', alignItems: 'center', gap: 6,
-                marginLeft: 4,
-              }}
-            >
-              <User size={13} />
-              Login
-            </motion.button>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 4 }}>
+          {/* Login - desktop only, mobile me menu me hai */}
+          <div className="desktop-only">
+            {!user ? (
               <motion.button
-                onClick={onUserDashboard}
-                whileHover={{ scale: 1.05 }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                }}
-                title="My Account"
-              >
-                {user.avatar ? (
-                  <img src={user.avatar} alt={user.name} style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', border: '2px solid #E50010' }} />
-                ) : (
-                  <div style={{
-                    width: 32, height: 32, borderRadius: '50%',
-                    background: '#E50010', color: '#fff',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 13, fontWeight: 700,
-                  }}>
-                    {user.name[0].toUpperCase()}
-                  </div>
-                )}
-                <span style={{ fontSize: 12, fontWeight: 600, color: theme.colors.text, maxWidth: 70, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {user.name.split(' ')[0]}
-                </span>
-              </motion.button>
-              <motion.button
-                onClick={onLogout}
+                onClick={onAuthOpen}
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}
                 style={{
-                  fontSize: 10, color: '#E50010', fontWeight: 700,
+                  background: '#E50010', color: '#fff',
+                  padding: '8px 18px', fontSize: 11, fontWeight: 700,
                   letterSpacing: '0.08em', textTransform: 'uppercase',
-                  padding: '5px 12px', border: '1px solid #E50010',
-                  borderRadius: 999, cursor: 'pointer', background: 'none',
+                  border: 'none', cursor: 'pointer', borderRadius: 999,
+                  display: 'flex', alignItems: 'center', gap: 6, marginLeft: 4,
                 }}
               >
-                Logout
+                <User size={13} />
+                Login
               </motion.button>
-            </div>
-          )}
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 4 }}>
+                <motion.button
+                  onClick={onUserDashboard}
+                  whileHover={{ scale: 1.05 }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                >
+                  {user.avatar ? (
+                    <img src={user.avatar} alt={user.name} style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', border: '2px solid #E50010' }} />
+                  ) : (
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#E50010', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700 }}>
+                      {user.name[0].toUpperCase()}
+                    </div>
+                  )}
+                  <span style={{ fontSize: 12, fontWeight: 600, color: theme.colors.text, maxWidth: 70, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {user.name.split(' ')[0]}
+                  </span>
+                </motion.button>
+                <motion.button
+                  onClick={onLogout}
+                  whileHover={{ scale: 1.04 }}
+                  style={{ fontSize: 10, color: '#E50010', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '5px 12px', border: '1px solid #E50010', borderRadius: 999, cursor: 'pointer', background: 'none' }}
+                >
+                  Logout
+                </motion.button>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile: User icon if logged in */}
+          <div className="mobile-only">
+            {user && (
+              <button onClick={onUserDashboard} style={{ padding: 8, background: 'none', border: 'none', cursor: 'pointer' }}>
+                {user.avatar ? (
+                  <img src={user.avatar} alt={user.name} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '2px solid #E50010' }} />
+                ) : (
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#E50010', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>
+                    {user.name[0].toUpperCase()}
+                  </div>
+                )}
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -448,6 +460,12 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
         @media (max-width: 768px) {
           .desktop-nav { display: none !important; }
           .mobile-menu-btn { display: flex !important; }
+          .desktop-only { display: none !important; }
+          .mobile-only { display: flex !important; }
+          .live-clock-wrap { display: none !important; }
+        }
+        @media (min-width: 769px) {
+          .mobile-only { display: none !important; }
         }
       `}</style>
     </header>
