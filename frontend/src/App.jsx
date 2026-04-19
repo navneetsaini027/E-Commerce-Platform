@@ -38,7 +38,6 @@ import ThankYouModal from './components/ThankYouModal';
 import StarryBackground from './components/StarryBackground';
 import SpinWheel from './components/SpinWheel';
 import QuickView from './components/QuickView';
-import RecentlyViewed from './components/RecentlyViewed';
 import ParticleBackground from './components/ParticleBackground';
 import FloatingSpinButton from './components/FloatingSpinButton';
 import ProductComparison from './components/ProductComparison';
@@ -88,13 +87,6 @@ function AppContent() {
   const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem('splashShown'));
   const [spinWheelOpen, setSpinWheelOpen] = useState(false);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
-  const [recentlyViewed, setRecentlyViewed] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
-    } catch {
-      return [];
-    }
-  });
   const [compareProducts, setCompareProducts] = useState([]);
   const [showComparison, setShowComparison] = useState(false);
   const [filters, setFilters] = useState({
@@ -277,14 +269,6 @@ function AppContent() {
 
       const res = await getProduct(product._id);
       setSelectedProduct(res.data);
-      
-      // Add to recently viewed
-      setRecentlyViewed(prev => {
-        const filtered = prev.filter(p => p._id !== product._id);
-        const updated = [product, ...filtered].slice(0, 8);
-        localStorage.setItem('recentlyViewed', JSON.stringify(updated));
-        return updated;
-      });
     } catch (err) {
       console.error('Error loading product:', err);
       setSelectedProduct(product);
@@ -426,13 +410,6 @@ function AppContent() {
         )}
         <StyleLookbook onShopCategory={openCategory} />
         <GiftSection onShopCategory={openCategory} />
-        <RecentlyViewed
-          products={recentlyViewed}
-          onAddToCart={handleAddToCart}
-          onAddToWishlist={handleAddToWishlist}
-          onProductClick={handleProductClick}
-          onQuickView={handleQuickView}
-        />
         <BrandStats />
         <TestimonialsSection />
         <NewsletterSection />

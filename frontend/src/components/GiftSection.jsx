@@ -72,7 +72,8 @@ export default function GiftSection({ onShopCategory }) {
             style={{
               overflow: 'hidden', cursor: 'pointer',
               boxShadow: `0 4px 24px ${theme.colors.shadow}`,
-              background: theme.colors.surface,
+              background: theme.isDark ? 'rgba(30, 41, 59, 0.6)' : theme.colors.surface,
+              border: `1px solid ${theme.isDark ? 'rgba(148, 163, 184, 0.2)' : theme.colors.border}`,
               transition: 'box-shadow 0.3s',
             }}
           >
@@ -107,7 +108,8 @@ export default function GiftSection({ onShopCategory }) {
                   whileTap={{ scale: 0.95 }}
                   onClick={e => { e.stopPropagation(); onShopCategory(item.category, item.title); }}
                   style={{
-                    background: theme.colors.text, color: theme.colors.background,
+                    background: '#E50010', 
+                    color: '#fff',
                     padding: '8px 20px', fontSize: 11, fontWeight: 700,
                     letterSpacing: '0.1em', textTransform: 'uppercase', border: 'none', cursor: 'pointer',
                   }}
