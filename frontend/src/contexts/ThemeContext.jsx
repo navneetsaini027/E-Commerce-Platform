@@ -66,9 +66,8 @@ export const ThemeProvider = ({ children }) => {
     if (savedTheme && themes[savedTheme]) {
       setCurrentTheme(savedTheme);
     } else {
-      // Check system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setCurrentTheme(prefersDark ? 'dark' : 'light');
+      // Default to light mode
+      setCurrentTheme('light');
     }
   }, []);
 
