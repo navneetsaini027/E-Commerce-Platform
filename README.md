@@ -1,4 +1,4 @@
-# 🛍️ Aashirwad Fashion - Premium E-Commerce Platform
+# 🛍️ E-Commerce Platform - Premium MERN Stack Application
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
@@ -6,7 +6,7 @@
 
 ## 🎯 Quick Overview
 
-**Aashirwad Fashion** is a complete, production-ready e-commerce platform built with MERN stack (MongoDB, Express, React, Node.js). It features 50+ premium features including dark mode with starry night animation, spin the wheel rewards, multiple image upload, and much more!
+**E-Commerce Platform** is a complete, production-ready e-commerce platform built with MERN stack (MongoDB, Express, React, Node.js). Developed with 180+ premium features including real-time notifications, gamification (spin-the-wheel), dark mode with starry night animations, admin dashboard, and secure authentication (JWT + Google OAuth).
 
 ---
 
@@ -21,8 +21,8 @@
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/aashirwad-fashion.git
-cd aashirwad-fashion
+git clone https://github.com/navneetsaini027/E-Commerce-Platform.git
+cd E-Commerce-Platform
 
 # Backend setup
 cd backend
@@ -58,7 +58,7 @@ All documentation is organized in the `DOCUMENTATION/` folder:
 9. **09_PROJECT_COMPLETE_SUMMARY.md** - Complete summary
 10. **10_GITHUB_PUSH_COMMANDS.txt** - Git commands
 11. **11_OAUTH_SETUP_GUIDE.md** - OAuth setup
-12. **00_ALL_FEATURES_LIST.md** - Complete features list
+12. **00_ALL_FEATURES_LIST.md** - Complete features list (180+)
 
 ---
 
@@ -98,7 +98,7 @@ All documentation is organized in the `DOCUMENTATION/` folder:
 ### 🔐 Admin Features
 - Admin dashboard with analytics
 - Product management (CRUD)
-- **Multiple Image Upload** (NEW!)
+- **Multiple Image Upload**
 - Order management
 - User management
 - Stock management
@@ -119,7 +119,7 @@ All documentation is organized in the `DOCUMENTATION/` folder:
 ## 📦 Project Structure
 
 ```
-aashirwad-fashion/
+E-Commerce-Platform/
 ├── backend/              # Node.js + Express
 │   ├── models/          # MongoDB schemas (10)
 │   ├── routes/          # API routes (11)
@@ -134,7 +134,7 @@ aashirwad-fashion/
 │   │   └── App.jsx      # Main app
 │   └── public/          # Static assets
 │
-├── DOCUMENTATION/       # All documentation (12 files)
+├── DOCUMENTATION/       # All documentation (13 files)
 └── LICENSE             # MIT License
 ```
 
@@ -177,18 +177,27 @@ EMAIL_PASS=your_password
 
 ## 📊 Statistics
 
-- **Total Files**: 100+
-- **Lines of Code**: ~15,000+
+- **Total Files**: 108
+- **Lines of Code**: ~22,947
 - **Components**: 40+
 - **API Endpoints**: 50+
-- **Features**: 50+
-- **Documentation**: 12 files
+- **Features**: 180+
+- **Documentation**: 13 files
 
 ---
 
 ## 🎯 Features List
 
-See `DOCUMENTATION/00_ALL_FEATURES_LIST.md` for complete list of all 50+ features.
+See `DOCUMENTATION/00_ALL_FEATURES_LIST.md` for complete list of all 180+ features including:
+- Authentication & Authorization
+- Product Management
+- Shopping Cart & Checkout
+- Payment Integration
+- Admin Dashboard
+- User Dashboard
+- Gamification Features
+- Real-time Notifications
+- And much more!
 
 ---
 
