@@ -233,23 +233,6 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
             </button>
           </div>
 
-          {/* Account - Login or User Avatar */}
-          {!user ? (
-            <button onClick={onAuthOpen} style={{ padding: 8, background: 'none', border: 'none', cursor: 'pointer' }} aria-label="Login">
-              <User size={18} color={theme.colors.text} />
-            </button>
-          ) : (
-            <button onClick={onUserDashboard} style={{ padding: 4, background: 'none', border: 'none', cursor: 'pointer' }}>
-              {user.avatar ? (
-                <img src={user.avatar} alt={user.name} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '2px solid #E50010' }} />
-              ) : (
-                <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#E50010', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>
-                  {user.name[0].toUpperCase()}
-                </div>
-              )}
-            </button>
-          )}
-
           {/* Wishlist */}
           <button onClick={onWishlistOpen} style={{ padding: 8, position: 'relative', background: 'none', border: 'none', cursor: 'pointer' }} aria-label="Wishlist">
             <Heart size={18} color={theme.colors.text} />
@@ -288,14 +271,32 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
                 <Settings size={18} color="#E50010" />
               </button>
             )}
-            {user && (
-              <button onClick={onLogout} style={{ fontSize: 10, color: '#E50010', fontWeight: 700, padding: '5px 12px', border: '1px solid #E50010', borderRadius: 999, cursor: 'pointer', background: 'none' }}>
-                Logout
-              </button>
+            {!user ? (
+              <motion.button onClick={onAuthOpen} whileHover={{ scale: 1.04 }} style={{ background: '#E50010', color: '#fff', padding: '8px 18px', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', border: 'none', cursor: 'pointer', borderRadius: 999, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <User size={13} /> Login
+              </motion.button>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <button onClick={onUserDashboard} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                  {user.avatar ? (
+                    <img src={user.avatar} alt={user.name} style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', border: '2px solid #E50010' }} />
+                  ) : (
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#E50010', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700 }}>
+                      {user.name[0].toUpperCase()}
+                    </div>
+                  )}
+                  <span style={{ fontSize: 12, fontWeight: 600, color: theme.colors.text, maxWidth: 70, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {user.name.split(' ')[0]}
+                  </span>
+                </button>
+                <button onClick={onLogout} style={{ fontSize: 10, color: '#E50010', fontWeight: 700, padding: '5px 12px', border: '1px solid #E50010', borderRadius: 999, cursor: 'pointer', background: 'none' }}>
+                  Logout
+                </button>
+              </div>
             )}
           </div>
 
-          {/* Mobile Hamburger Menu */}
+          {/* Mobile Hamburger Menu - rightmost */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             style={{ padding: 8, background: 'none', border: 'none', cursor: 'pointer', display: 'none' }}
