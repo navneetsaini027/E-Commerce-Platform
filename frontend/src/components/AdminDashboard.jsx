@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Mail, Plus, Trash2, Edit2, X, Check, TrendingUp, AlertCircle, RefreshCw, LogOut, Search } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Mail, Plus, Trash2, Edit2, X, Check, TrendingUp, AlertCircle, RefreshCw, LogOut, Search, Menu } from "lucide-react";
 import { getAdminStats, getAdminOrders, updateOrderStatus, getAdminUsers, updateUserRole, getProducts, addProduct, deleteProduct, updateProductStock, getAdminCoupons, createCoupon, deleteCoupon, getAdminNewsletter } from "../api/api";
 import { useTheme } from "../contexts/ThemeContext";
 import { CATEGORIES } from "../data/products";
@@ -444,6 +444,7 @@ export default function AdminDashboard({ user, onLogout, onClose }) {
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState("overview");
   const [toastData, setToastData] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const showToast = (msg, type = "success") => setToastData({ msg, type });
 
   if (!user || user.role !== "admin") {
@@ -461,17 +462,40 @@ export default function AdminDashboard({ user, onLogout, onClose }) {
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 2000, display: "flex", fontFamily: "'Inter', system-ui, sans-serif" }}>
+
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 2001, display: "none" }}
+          className="mobile-overlay"
+        />
+      )}
+
       {/* Sidebar */}
-      <div style={{ width: 230, flexShrink: 0, background: "#1a1a2e", display: "flex", flexDirection: "column", overflowY: "auto" }}>
-        <div style={{ padding: "24px 20px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-          <div style={{ fontSize: 17, fontWeight: 800, color: "#fff" }}>Aashirwad</div>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginTop: 2, textTransform: "uppercase", letterSpacing: 1 }}>Admin Panel</div>
+      <div style={{
+        width: 230, flexShrink: 0, background: "#1a1a2e",
+        display: "flex", flexDirection: "column", overflowY: "auto",
+        position: "relative", zIndex: 2002,
+        transition: "transform 0.3s ease",
+      }}
+        className={`admin-sidebar ${sidebarOpen ? "sidebar-open" : ""}`}
+      >
+        <div style={{ padding: "24px 20px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ fontSize: 17, fontWeight: 800, color: "#fff" }}>Aashirwad</div>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginTop: 2, textTransform: "uppercase", letterSpacing: 1 }}>Admin Panel</div>
+          </div>
+          {/* Close sidebar on mobile */}
+          <button onClick={() => setSidebarOpen(false)} className="mobile-close-btn" style={{ display: "none", background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}>
+            <X size={18} />
+          </button>
         </div>
         <nav style={{ flex: 1, padding: "16px 12px" }}>
           {TABS.map(tab => {
             const active = activeTab === tab.id;
             return (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderRadius: 10, border: "none", cursor: "pointer", marginBottom: 4, textAlign: "left", background: active ? "rgba(255,255,255,0.12)" : "transparent", color: active ? "#fff" : "rgba(255,255,255,0.55)", fontWeight: active ? 600 : 400, fontSize: 14, transition: "all 0.15s" }}>
+              <button key={tab.id} onClick={() => { setActiveTab(tab.id); setSidebarOpen(false); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderRadius: 10, border: "none", cursor: "pointer", marginBottom: 4, textAlign: "left", background: active ? "rgba(255,255,255,0.12)" : "transparent", color: active ? "#fff" : "rgba(255,255,255,0.55)", fontWeight: active ? 600 : 400, fontSize: 14, transition: "all 0.15s" }}>
                 <tab.icon size={16} />
                 {tab.label}
                 {active && <div style={{ marginLeft: "auto", width: 6, height: 6, borderRadius: "50%", background: "#E50010" }} />}
@@ -497,16 +521,22 @@ export default function AdminDashboard({ user, onLogout, onClose }) {
 
       {/* Main */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", background: theme.colors.background, overflow: "hidden" }}>
-        <div style={{ padding: "18px 28px", borderBottom: "1px solid " + theme.colors.border, display: "flex", alignItems: "center", justifyContent: "space-between", background: theme.colors.surface, flexShrink: 0 }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: theme.colors.text }}>{TABS.find(t => t.id === activeTab)?.label}</h1>
-            <p style={{ margin: 0, fontSize: 12, color: theme.colors.textSecondary, marginTop: 2 }}>{new Date().toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
+        <div style={{ padding: "18px 16px", borderBottom: "1px solid " + theme.colors.border, display: "flex", alignItems: "center", justifyContent: "space-between", background: theme.colors.surface, flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {/* Mobile menu toggle */}
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="mobile-menu-toggle" style={{ display: "none", background: "none", border: "none", cursor: "pointer", padding: 4 }}>
+              <Menu size={22} color={theme.colors.text} />
+            </button>
+            <div>
+              <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: theme.colors.text }}>{TABS.find(t => t.id === activeTab)?.label}</h1>
+              <p style={{ margin: 0, fontSize: 11, color: theme.colors.textSecondary, marginTop: 2 }}>{new Date().toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
+            </div>
           </div>
           <button onClick={onClose} style={{ background: theme.colors.border, border: "none", borderRadius: 10, padding: "8px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: theme.colors.text }}>
             <X size={15} /> Close
           </button>
         </div>
-        <div style={{ flex: 1, overflowY: "auto", padding: 28 }}>
+        <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px" }}>
           <AnimatePresence mode="wait">
             <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.15 }}>
               {activeTab === "overview"   && <OverviewTab    {...tabProps} />}
@@ -523,6 +553,29 @@ export default function AdminDashboard({ user, onLogout, onClose }) {
       <AnimatePresence>
         {toastData && <Toast key={toastData.msg} msg={toastData.msg} type={toastData.type} onClose={() => setToastData(null)} />}
       </AnimatePresence>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .admin-sidebar {
+            position: fixed !important;
+            top: 0; left: 0; bottom: 0;
+            transform: translateX(-100%);
+            z-index: 2002;
+          }
+          .admin-sidebar.sidebar-open {
+            transform: translateX(0) !important;
+          }
+          .mobile-overlay {
+            display: block !important;
+          }
+          .mobile-menu-toggle {
+            display: flex !important;
+          }
+          .mobile-close-btn {
+            display: flex !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
