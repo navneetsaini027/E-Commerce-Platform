@@ -162,19 +162,30 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         gap: 8,
       }}>
-        {/* LEFT: Brand Name (always visible) */}
-        <a href="#" style={{
-          fontWeight: 700,
-          fontSize: 'clamp(11px, 1.6vw, 17px)',
-          letterSpacing: '0.04em',
-          whiteSpace: 'nowrap',
-          fontFamily: '"Cinzel Decorative", serif',
-          color: theme.colors.text,
-          textDecoration: 'none',
-          flexShrink: 0,
-        }}>
-          {BRAND.name}
-        </a>
+        {/* LEFT: Hamburger + Brand Name */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          {/* Mobile Hamburger - left of brand */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer', display: 'none' }}
+            className="mobile-menu-btn"
+            aria-label="Menu"
+          >
+            {mobileMenuOpen ? <X size={22} color={theme.colors.text} /> : <Menu size={22} color={theme.colors.text} />}
+          </button>
+
+          <a href="#" style={{
+            fontWeight: 700,
+            fontSize: 'clamp(11px, 1.6vw, 17px)',
+            letterSpacing: '0.04em',
+            whiteSpace: 'nowrap',
+            fontFamily: '"Cinzel Decorative", serif',
+            color: theme.colors.text,
+            textDecoration: 'none',
+          }}>
+            {BRAND.name}
+          </a>
+        </div>
 
         {/* Desktop Category Nav */}
         <nav style={{ display: 'flex', gap: 32 }} className="desktop-nav">
@@ -253,8 +264,26 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
             )}
           </button>
 
-          {/* Desktop extras */}
-          <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {/* Account Avatar - visible on mobile next to cart */}
+          <div className="mobile-account">
+            {!user ? (
+              <button onClick={onAuthOpen} style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer' }}>
+                <User size={18} color={theme.colors.text} />
+              </button>
+            ) : (
+              <button onClick={onUserDashboard} style={{ padding: 4, background: 'none', border: 'none', cursor: 'pointer' }}>
+                {user.avatar ? (
+                  <img src={user.avatar} alt={user.name} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '2px solid #E50010' }} />
+                ) : (
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#E50010', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>
+                    {user.name[0].toUpperCase()}
+                  </div>
+                )}
+              </button>
+            )}
+          </div>
+
+          {/* Desktop extras */}          <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <button onClick={toggleTheme} style={{ padding: 8, background: 'none', border: 'none', cursor: 'pointer' }}>
               <motion.div initial={false} animate={{ rotate: isDark ? 180 : 0 }} transition={{ duration: 0.3 }}>
                 {isDark ? <Sun size={18} color={theme.colors.text} /> : <Moon size={18} color={theme.colors.text} />}
@@ -295,16 +324,6 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
               </div>
             )}
           </div>
-
-          {/* Mobile Hamburger Menu - rightmost */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            style={{ padding: 8, background: 'none', border: 'none', cursor: 'pointer', display: 'none' }}
-            className="mobile-menu-btn"
-            aria-label="Menu"
-          >
-            {mobileMenuOpen ? <X size={22} color={theme.colors.text} /> : <Menu size={22} color={theme.colors.text} />}
-          </button>
 
         </div>
       </div>
@@ -424,6 +443,10 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
           .mobile-menu-btn { display: flex !important; }
           .desktop-only { display: none !important; }
           .live-clock-wrap { display: none !important; }
+          .mobile-account { display: flex !important; }
+        }
+        @media (min-width: 769px) {
+          .mobile-account { display: none !important; }
         }
       `}</style>
     </header>

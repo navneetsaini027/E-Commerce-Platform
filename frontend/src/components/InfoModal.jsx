@@ -129,7 +129,7 @@ const CONTENT = {
   'Privacy Policy': {
     title: 'Privacy Policy',
     sections: [
-      { heading: 'Last Updated: January 2025' },
+      { heading: 'Last Updated: January 2026' },
       { q: 'Information We Collect', a: 'We collect your name, email, phone number, shipping address, and payment information when you create an account or place an order.' },
       { q: 'How We Use Your Data', a: 'Your data is used to process orders, send order updates, personalise your shopping experience, and send promotional offers (only if you opt in).' },
       { q: 'Data Security', a: 'All data is encrypted using SSL/TLS. We never store your full card details. Payments are processed through PCI-DSS compliant gateways.' },
@@ -142,7 +142,7 @@ const CONTENT = {
   'Terms & Conditions': {
     title: 'Terms & Conditions',
     sections: [
-      { heading: 'Last Updated: January 2025' },
+      { heading: 'Last Updated: January 2026' },
       { q: 'Acceptance of Terms', a: 'By using our website and placing orders, you agree to these Terms & Conditions. Please read them carefully.' },
       { q: 'Account Responsibility', a: 'You are responsible for maintaining the confidentiality of your account credentials. Notify us immediately of any unauthorised access.' },
       { q: 'Product Information', a: 'We strive for accuracy in product descriptions and images. Slight colour variations may occur due to screen settings.' },

@@ -6,7 +6,7 @@ const SLIDES = [
   {
     image: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1600&q=90',
     position: 'center 30%',
-    tag: 'New Season · 2025 Collection',
+    tag: 'New Season · 2026 Collection',
     heading: ['Style Has', 'No Rules'],
     sub: 'Dress bold. Live free. Explore the latest trends for him & her.',
     category: 'All', categoryLabel: 'All Products',
@@ -15,7 +15,7 @@ const SLIDES = [
   {
     image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1600&q=90',
     position: 'center 20%',
-    tag: "Women's Edit · 2025",
+    tag: "Women's Edit · 2026",
     heading: ['Own Every', 'Moment'],
     sub: "Confidence looks good on you. Discover our women's collection.",
     category: 'Ladies', categoryLabel: "Women's Collection",
@@ -24,7 +24,7 @@ const SLIDES = [
   {
     image: 'https://images.unsplash.com/photo-1488161628813-04466f872be2?w=1600&q=90',
     position: 'center 15%',
-    tag: "Men's Collection · 2025",
+    tag: "Men's Collection · 2026",
     heading: ['Dress Like', 'You Mean It'],
     sub: 'Sharp fits, clean lines. Elevate your everyday wardrobe.',
     category: 'Men', categoryLabel: "Men's Collection",
@@ -33,7 +33,7 @@ const SLIDES = [
   {
     image: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=1600&q=90',
     position: 'center 25%',
-    tag: 'Couple Goals · 2025',
+    tag: 'Couple Goals · 2026',
     heading: ['Together', 'In Style'],
     sub: 'Matching energy, matching fashion. Shop his & hers looks.',
     category: 'All', categoryLabel: 'Couple Looks',

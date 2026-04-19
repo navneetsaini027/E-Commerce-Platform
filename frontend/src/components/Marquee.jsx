@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 
-const TEXT = "AASHIRWAD FASHION • SUMMER 2025 COLLECTION • NEW ARRIVALS • MEMBER PRICES • ";
+const TEXT = "AASHIRWAD FASHION • SUMMER 2026 COLLECTION • NEW ARRIVALS • MEMBER PRICES • ";
 
 export default function Marquee() {
   const { theme } = useTheme();
