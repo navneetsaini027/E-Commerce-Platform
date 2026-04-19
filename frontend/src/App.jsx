@@ -19,7 +19,7 @@ import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 const GOOGLE_CLIENT_ID = '331730642980-27qqkceh8ijtemtkp2nrvtvh801or8h3.apps.googleusercontent.com';
-import { getProducts, addProduct, deleteProduct, addReview, getProduct, updateProductStock, trackProductView } from './api/api';
+import { getProducts, addProduct, deleteProduct, addReview, getProduct, updateProductStock, trackProductView, getMe } from './api/api';
 import SeasonSaleBanner from './components/SeasonSaleBanner';
 import TrendingSection from './components/TrendingSection';
 import DiscountStrip from './components/DiscountStrip';
@@ -123,6 +123,25 @@ function AppContent() {
         console.error('Error loading products:', err);
         setLoading(false);
       });
+  }, []);
+
+  // Refresh user role from backend on load
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      getMe()
+        .then(res => {
+          const freshUser = res.data;
+          setUser(freshUser);
+          localStorage.setItem('user', JSON.stringify(freshUser));
+        })
+        .catch(() => {
+          // Token invalid - logout
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setUser(null);
+        });
+    }
   }, []);
 
   // Persist cart

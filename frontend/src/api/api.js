@@ -24,6 +24,7 @@ export const getLowStockProducts = () => API.get('/products/alerts/low-stock');
 export const register = (data) => API.post('/auth/register', data);
 export const login = (data) => API.post('/auth/login', data);
 export const googleLogin = (credential) => API.post('/auth/google', { credential });
+export const getMe = () => API.get('/auth/me');
 
 // Orders
 export const placeOrder = (data) => API.post('/orders', data);

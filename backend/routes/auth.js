@@ -102,4 +102,18 @@ router.patch('/profile', async (req, res) => {
   }
 });
 
+// GET current user (fresh from DB)
+router.get('/me', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: 'No token' });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({ id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar });
+  } catch (err) {
+    res.status(401).json({ message: 'Invalid token' });
+  }
+});
+
 module.exports = router;
