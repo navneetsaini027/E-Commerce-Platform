@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'https://e-commerce-platform-4a86.onrender.com/api',
+  baseURL: 'https://e-commerce-platform-4a65.onrender.com/api',
 });
 
 // Add token to requests
