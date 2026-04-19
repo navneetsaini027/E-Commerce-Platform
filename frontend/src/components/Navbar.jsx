@@ -157,35 +157,21 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
       {/* Top bar */}
       <div style={{
         maxWidth: 1440, margin: '0 auto',
-        padding: '0 24px',
+        padding: '0 16px',
         height: 60,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        gap: 16,
+        gap: 8,
       }}>
-        {/* LEFT: Clock + Mobile menu */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            style={{ display: 'none', padding: 8 }}
-            className="mobile-menu-btn"
-            aria-label="Menu"
-          >
-            {mobileMenuOpen ? <X size={20} color={theme.colors.text} /> : <Menu size={20} color={theme.colors.text} />}
-          </button>
-          <div className="live-clock-wrap">
-            <LiveClock theme={theme} isDark={isDark} />
-          </div>
-        </div>
-
-        {/* Logo */}
+        {/* LEFT: Brand Name (always visible) */}
         <a href="#" style={{
           fontWeight: 700,
-          fontSize: 'clamp(12px, 1.6vw, 17px)',
+          fontSize: 'clamp(11px, 1.6vw, 17px)',
           letterSpacing: '0.04em',
           whiteSpace: 'nowrap',
           fontFamily: '"Cinzel Decorative", serif',
           color: theme.colors.text,
           textDecoration: 'none',
+          flexShrink: 0,
         }}>
           {BRAND.name}
         </a>
@@ -197,15 +183,11 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
               key={cat}
               onClick={() => onCategoryChange(cat === activeCategory ? 'All' : cat)}
               style={{
-                fontSize: 13,
-                fontWeight: activeCategory === cat ? 700 : 400,
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase',
-                color: theme.colors.text,
-                padding: '4px 0',
+                fontSize: 13, fontWeight: activeCategory === cat ? 700 : 400,
+                letterSpacing: '0.06em', textTransform: 'uppercase',
+                color: theme.colors.text, padding: '4px 0',
                 borderBottom: activeCategory === cat ? `2px solid ${theme.colors.text}` : '2px solid transparent',
-                transition: 'all 0.2s ease',
-                background: 'none',
+                transition: 'all 0.2s ease', background: 'none',
               }}
             >
               {cat}
@@ -213,15 +195,21 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
           ))}
         </nav>
 
-        {/* Icons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {/* Search - hide on mobile */}
-          <div className="desktop-only">
+        {/* Desktop Clock */}
+        <div className="live-clock-wrap desktop-only">
+          <LiveClock theme={theme} isDark={isDark} />
+        </div>
+
+        {/* RIGHT ICONS - Both Mobile & Desktop */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+
+          {/* Search */}
+          <div style={{ display: 'flex', alignItems: 'center' }}>
             <AnimatePresence>
               {searchOpen && (
                 <motion.div
                   initial={{ width: 0, opacity: 0 }}
-                  animate={{ width: 200, opacity: 1 }}
+                  animate={{ width: 150, opacity: 1 }}
                   exit={{ width: 0, opacity: 0 }}
                   transition={{ duration: 0.25 }}
                   style={{ overflow: 'hidden' }}
@@ -230,153 +218,97 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
                     autoFocus
                     value={searchQuery}
                     onChange={e => handleSearchChange(e.target.value)}
-                    placeholder="Search products..."
+                    placeholder="Search..."
                     style={{
                       width: '100%', border: 'none', borderBottom: `1px solid ${theme.colors.text}`,
                       outline: 'none', fontSize: 13, padding: '4px 0',
                       background: 'transparent', color: theme.colors.text,
-                      transition: 'border-color 0.3s ease, color 0.3s ease',
                     }}
                   />
                 </motion.div>
               )}
             </AnimatePresence>
-            <button onClick={handleSearchToggle} style={{ padding: 8 }} aria-label="Search">
+            <button onClick={handleSearchToggle} style={{ padding: 8, background: 'none', border: 'none', cursor: 'pointer' }} aria-label="Search">
               {searchOpen ? <X size={18} color={theme.colors.text} /> : <Search size={18} color={theme.colors.text} />}
             </button>
           </div>
 
-          {/* Theme toggle */}
-          <button
-            onClick={toggleTheme}
-            style={{ padding: 8 }}
-            aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-          >
-            <motion.div initial={false} animate={{ rotate: isDark ? 180 : 0 }} transition={{ duration: 0.3 }}>
-              {isDark ? <Sun size={18} color={theme.colors.text} /> : <Moon size={18} color={theme.colors.text} />}
-            </motion.div>
+          {/* Account - Login or User Avatar */}
+          {!user ? (
+            <button onClick={onAuthOpen} style={{ padding: 8, background: 'none', border: 'none', cursor: 'pointer' }} aria-label="Login">
+              <User size={18} color={theme.colors.text} />
+            </button>
+          ) : (
+            <button onClick={onUserDashboard} style={{ padding: 4, background: 'none', border: 'none', cursor: 'pointer' }}>
+              {user.avatar ? (
+                <img src={user.avatar} alt={user.name} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '2px solid #E50010' }} />
+              ) : (
+                <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#E50010', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>
+                  {user.name[0].toUpperCase()}
+                </div>
+              )}
+            </button>
+          )}
+
+          {/* Wishlist */}
+          <button onClick={onWishlistOpen} style={{ padding: 8, position: 'relative', background: 'none', border: 'none', cursor: 'pointer' }} aria-label="Wishlist">
+            <Heart size={18} color={theme.colors.text} />
+            {wishlistCount > 0 && (
+              <span style={{ position: 'absolute', top: 2, right: 2, background: '#E50010', color: '#fff', borderRadius: '50%', width: 16, height: 16, fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {wishlistCount > 99 ? '99+' : wishlistCount}
+              </span>
+            )}
           </button>
 
-          {/* Notifications - desktop only */}
-          <div className="desktop-only">
-            {user && <NotificationCenter user={user} />}
-          </div>
+          {/* Cart */}
+          <button onClick={onCartOpen} style={{ padding: 8, position: 'relative', background: 'none', border: 'none', cursor: 'pointer' }} aria-label="Cart">
+            <ShoppingBag size={18} color={theme.colors.text} />
+            {cartCount > 0 && (
+              <span style={{ position: 'absolute', top: 2, right: 2, background: '#E50010', color: '#fff', borderRadius: '50%', width: 16, height: 16, fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {cartCount > 99 ? '99+' : cartCount}
+              </span>
+            )}
+          </button>
 
-          {/* Orders - desktop only */}
-          <div className="desktop-only">
+          {/* Desktop extras */}
+          <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <button onClick={toggleTheme} style={{ padding: 8, background: 'none', border: 'none', cursor: 'pointer' }}>
+              <motion.div initial={false} animate={{ rotate: isDark ? 180 : 0 }} transition={{ duration: 0.3 }}>
+                {isDark ? <Sun size={18} color={theme.colors.text} /> : <Moon size={18} color={theme.colors.text} />}
+              </motion.div>
+            </button>
+            {user && <NotificationCenter user={user} />}
             {user && (
-              <button onClick={onOrdersOpen} style={{ padding: 8 }} aria-label="My Orders">
+              <button onClick={onOrdersOpen} style={{ padding: 8, background: 'none', border: 'none', cursor: 'pointer' }}>
                 <Package size={18} color={theme.colors.text} />
               </button>
             )}
-          </div>
-
-          {/* Wishlist */}
-          <button onClick={onWishlistOpen} style={{ padding: 8, position: 'relative' }} aria-label="Wishlist">
-            <Heart size={18} color={theme.colors.text} />
-            {wishlistCount > 0 && (
-              <motion.span key={wishlistCount} initial={{ scale: 0 }} animate={{ scale: 1 }} style={{
-                position: 'absolute', top: 2, right: 2,
-                background: '#E50010', color: '#fff',
-                borderRadius: '50%', width: 16, height: 16,
-                fontSize: 10, fontWeight: 700,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                {wishlistCount > 99 ? '99+' : wishlistCount}
-              </motion.span>
-            )}
-          </button>
-
-          {/* Admin - desktop only */}
-          <div className="desktop-only">
             {user?.role === 'admin' && (
-              <button onClick={onAdminToggle} style={{ padding: 8 }} aria-label="Admin Panel">
+              <button onClick={onAdminToggle} style={{ padding: 8, background: 'none', border: 'none', cursor: 'pointer' }}>
                 <Settings size={18} color="#E50010" />
               </button>
             )}
-          </div>
-
-          {/* Cart */}
-          <button onClick={onCartOpen} style={{ padding: 8, position: 'relative' }} aria-label="Shopping bag">
-            <ShoppingBag size={18} color={theme.colors.text} />
-            {cartCount > 0 && (
-              <motion.span key={cartCount} initial={{ scale: 0 }} animate={{ scale: 1 }} style={{
-                position: 'absolute', top: 2, right: 2,
-                background: '#E50010', color: '#fff',
-                borderRadius: '50%', width: 16, height: 16,
-                fontSize: 10, fontWeight: 700,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                {cartCount > 99 ? '99+' : cartCount}
-              </motion.span>
-            )}
-          </button>
-
-          {/* Login - desktop only, mobile me menu me hai */}
-          <div className="desktop-only">
-            {!user ? (
-              <motion.button
-                onClick={onAuthOpen}
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
-                style={{
-                  background: '#E50010', color: '#fff',
-                  padding: '8px 18px', fontSize: 11, fontWeight: 700,
-                  letterSpacing: '0.08em', textTransform: 'uppercase',
-                  border: 'none', cursor: 'pointer', borderRadius: 999,
-                  display: 'flex', alignItems: 'center', gap: 6, marginLeft: 4,
-                }}
-              >
-                <User size={13} />
-                Login
-              </motion.button>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 4 }}>
-                <motion.button
-                  onClick={onUserDashboard}
-                  whileHover={{ scale: 1.05 }}
-                  style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                >
-                  {user.avatar ? (
-                    <img src={user.avatar} alt={user.name} style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', border: '2px solid #E50010' }} />
-                  ) : (
-                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#E50010', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700 }}>
-                      {user.name[0].toUpperCase()}
-                    </div>
-                  )}
-                  <span style={{ fontSize: 12, fontWeight: 600, color: theme.colors.text, maxWidth: 70, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {user.name.split(' ')[0]}
-                  </span>
-                </motion.button>
-                <motion.button
-                  onClick={onLogout}
-                  whileHover={{ scale: 1.04 }}
-                  style={{ fontSize: 10, color: '#E50010', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '5px 12px', border: '1px solid #E50010', borderRadius: 999, cursor: 'pointer', background: 'none' }}
-                >
-                  Logout
-                </motion.button>
-              </div>
-            )}
-          </div>
-
-          {/* Mobile: User icon if logged in */}
-          <div className="mobile-only">
             {user && (
-              <button onClick={onUserDashboard} style={{ padding: 8, background: 'none', border: 'none', cursor: 'pointer' }}>
-                {user.avatar ? (
-                  <img src={user.avatar} alt={user.name} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '2px solid #E50010' }} />
-                ) : (
-                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#E50010', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>
-                    {user.name[0].toUpperCase()}
-                  </div>
-                )}
+              <button onClick={onLogout} style={{ fontSize: 10, color: '#E50010', fontWeight: 700, padding: '5px 12px', border: '1px solid #E50010', borderRadius: 999, cursor: 'pointer', background: 'none' }}>
+                Logout
               </button>
             )}
           </div>
+
+          {/* Mobile Hamburger Menu */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            style={{ padding: 8, background: 'none', border: 'none', cursor: 'pointer', display: 'none' }}
+            className="mobile-menu-btn"
+            aria-label="Menu"
+          >
+            {mobileMenuOpen ? <X size={22} color={theme.colors.text} /> : <Menu size={22} color={theme.colors.text} />}
+          </button>
+
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu Drawer */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
@@ -384,73 +316,102 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            style={{ 
-              overflow: 'hidden', 
-              borderTop: `1px solid ${theme.colors.border}`, 
-              background: isDark 
-                ? 'linear-gradient(180deg, rgba(22, 33, 62, 0.95) 0%, rgba(15, 23, 41, 0.95) 100%)'
+            style={{
+              overflow: 'hidden',
+              borderTop: `1px solid ${theme.colors.border}`,
+              background: isDark
+                ? 'linear-gradient(180deg, rgba(22, 33, 62, 0.98) 0%, rgba(15, 23, 41, 0.98) 100%)'
                 : theme.colors.background,
-              backdropFilter: isDark ? 'blur(10px)' : 'none',
+              backdropFilter: 'blur(10px)',
             }}
           >
-            <div style={{ padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {CATEGORIES.filter(c => c !== 'All').map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => { onCategoryChange(cat === activeCategory ? 'All' : cat); setMobileMenuOpen(false); }}
-                  style={{
-                    fontSize: 14, fontWeight: activeCategory === cat ? 700 : 400,
-                    letterSpacing: '0.06em', textTransform: 'uppercase',
-                    textAlign: 'left', color: theme.colors.text,
-                    transition: 'color 0.3s ease',
-                  }}
-                >
-                  {cat}
-                </button>
-              ))}
+            <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 0 }}>
 
-              {/* Login/Logout in Mobile Menu */}
-              <div style={{ borderTop: `1px solid ${theme.colors.border}`, paddingTop: 16, marginTop: 8 }}>
+              {/* Date & Time - Top of menu */}
+              <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center' }}>
+                <LiveClock theme={theme} isDark={isDark} />
+              </div>
+
+              {/* Theme Toggle */}
+              <button
+                onClick={() => { toggleTheme(); }}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', fontSize: 14, fontWeight: 500, color: theme.colors.text, background: 'none', border: 'none', cursor: 'pointer', borderBottom: `1px solid ${theme.colors.border}` }}
+              >
+                {isDark ? <Sun size={18} color={theme.colors.text} /> : <Moon size={18} color={theme.colors.text} />}
+                {isDark ? 'Light Mode' : 'Dark Mode'}
+              </button>
+
+              {/* Categories */}
+              <div style={{ padding: '8px 0' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: theme.colors.textSecondary, textTransform: 'uppercase', marginBottom: 8 }}>Categories</p>
+                {CATEGORIES.filter(c => c !== 'All').map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => { onCategoryChange(cat === activeCategory ? 'All' : cat); setMobileMenuOpen(false); }}
+                    style={{
+                      display: 'block', width: '100%', textAlign: 'left',
+                      padding: '10px 0', fontSize: 14,
+                      fontWeight: activeCategory === cat ? 700 : 400,
+                      letterSpacing: '0.06em', textTransform: 'uppercase',
+                      color: activeCategory === cat ? '#E50010' : theme.colors.text,
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      borderBottom: `1px solid ${theme.colors.border}`,
+                    }}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+
+              {/* User Features */}
+              {user && (
+                <div style={{ padding: '8px 0' }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: theme.colors.textSecondary, textTransform: 'uppercase', marginBottom: 8 }}>My Account</p>
+
+                  <button onClick={() => { onOrdersOpen(); setMobileMenuOpen(false); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '12px 0', fontSize: 14, fontWeight: 500, color: theme.colors.text, background: 'none', border: 'none', cursor: 'pointer', borderBottom: `1px solid ${theme.colors.border}` }}>
+                    <Package size={18} color={theme.colors.text} /> My Orders
+                  </button>
+
+                  <button onClick={() => { onUserDashboard(); setMobileMenuOpen(false); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '12px 0', fontSize: 14, fontWeight: 500, color: theme.colors.text, background: 'none', border: 'none', cursor: 'pointer', borderBottom: `1px solid ${theme.colors.border}` }}>
+                    <User size={18} color={theme.colors.text} /> My Dashboard
+                  </button>
+
+                  {/* Admin Panel - only for admin */}
+                  {user?.role === 'admin' && (
+                    <button onClick={() => { onAdminToggle(); setMobileMenuOpen(false); }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '12px 0', fontSize: 14, fontWeight: 700, color: '#E50010', background: 'none', border: 'none', cursor: 'pointer', borderBottom: `1px solid ${theme.colors.border}` }}>
+                      <Settings size={18} color="#E50010" /> Admin Panel
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Login / Logout */}
+              <div style={{ paddingTop: 12 }}>
                 {!user ? (
                   <button
                     onClick={() => { onAuthOpen(); setMobileMenuOpen(false); }}
-                    style={{
-                      width: '100%', padding: '12px', fontSize: 14, fontWeight: 700,
-                      letterSpacing: '0.06em', textTransform: 'uppercase',
-                      background: '#E50010', color: '#fff', border: 'none',
-                      cursor: 'pointer', borderRadius: 4,
-                    }}
+                    style={{ width: '100%', padding: '14px', fontSize: 14, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', background: '#E50010', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: 8 }}
                   >
                     Login / Sign Up
                   </button>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: theme.colors.text }}>
-                      👋 Hello, {user.name.split(' ')[0]}!
+                  <div>
+                    <p style={{ fontSize: 13, color: theme.colors.textSecondary, marginBottom: 10 }}>
+                      Logged in as <strong style={{ color: theme.colors.text }}>{user.name}</strong>
                     </p>
                     <button
-                      onClick={() => { onUserDashboard(); setMobileMenuOpen(false); }}
-                      style={{
-                        width: '100%', padding: '10px', fontSize: 13, fontWeight: 600,
-                        background: 'transparent', color: theme.colors.text,
-                        border: `1px solid ${theme.colors.border}`, cursor: 'pointer', borderRadius: 4,
-                      }}
-                    >
-                      My Account
-                    </button>
-                    <button
                       onClick={() => { onLogout(); setMobileMenuOpen(false); }}
-                      style={{
-                        width: '100%', padding: '10px', fontSize: 13, fontWeight: 600,
-                        background: 'transparent', color: '#E50010',
-                        border: `1px solid #E50010`, cursor: 'pointer', borderRadius: 4,
-                      }}
+                      style={{ width: '100%', padding: '12px', fontSize: 13, fontWeight: 700, background: 'transparent', color: '#E50010', border: '1px solid #E50010', cursor: 'pointer', borderRadius: 8 }}
                     >
                       Logout
                     </button>
                   </div>
                 )}
               </div>
+
             </div>
           </motion.div>
         )}
@@ -461,11 +422,7 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
           .desktop-nav { display: none !important; }
           .mobile-menu-btn { display: flex !important; }
           .desktop-only { display: none !important; }
-          .mobile-only { display: flex !important; }
           .live-clock-wrap { display: none !important; }
-        }
-        @media (min-width: 769px) {
-          .mobile-only { display: none !important; }
         }
       `}</style>
     </header>
