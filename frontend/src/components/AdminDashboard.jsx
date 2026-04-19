@@ -163,7 +163,7 @@ function OrdersTab({ toast }) {
 }
 
 const PCATS = CATEGORIES.filter(c => c !== "All");
-const emptyForm = { name: "", price: "", memberPrice: "", category: PCATS[0] || "", image: "", stock: "50", description: "" };
+const emptyForm = { name: "", price: "", memberPrice: "", category: PCATS[0] || "", image: "", images: [], stock: "50", description: "" };
 
 function ProductsTab({ toast }) {
   const [products, setProducts] = useState([]);
@@ -173,12 +173,17 @@ function ProductsTab({ toast }) {
   const [showForm, setShowForm] = useState(false);
   const [editStock, setEditStock] = useState({});
   const [stockVal, setStockVal] = useState({});
+  const [editProduct, setEditProduct] = useState(null);
+  const [editForm, setEditForm] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [newImageUrl, setNewImageUrl] = useState("");
+  const [newEditImageUrl, setNewEditImageUrl] = useState("");
   const inp = { width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid #ddd", fontSize: 13, outline: "none", boxSizing: "border-box" };
   const load = () => { setLoading(true); getProducts().then(r => setProducts(r.data)).catch(() => toast("Failed", "error")).finally(() => setLoading(false)); };
   useEffect(load, []);
   const handleAdd = async e => {
     e.preventDefault(); setAdding(true);
-    try { await addProduct({ ...form, price: Number(form.price), memberPrice: Number(form.memberPrice), stock: Number(form.stock) }); toast("Product added"); setForm(emptyForm); setShowForm(false); load(); }
+    try { await addProduct({ ...form, price: Number(form.price), memberPrice: Number(form.memberPrice), stock: Number(form.stock) }); toast("Product added"); setForm(emptyForm); setShowForm(false); setNewImageUrl(""); load(); }
     catch { toast("Failed to add", "error"); } finally { setAdding(false); }
   };
   const handleDelete = async id => {
@@ -189,6 +194,16 @@ function ProductsTab({ toast }) {
     try { await updateProductStock(id, Number(stockVal[id])); toast("Stock updated"); setEditStock(p => ({ ...p, [id]: false })); load(); }
     catch { toast("Failed", "error"); }
   };
+  const handleEditOpen = (p) => {
+    setEditProduct(p);
+    setEditForm({ name: p.name||"", price: p.price||"", memberPrice: p.memberPrice||"", category: p.category||PCATS[0], image: p.image||"", images: p.images||[], stock: p.stock||0, description: p.description||"" });
+    setNewEditImageUrl("");
+  };
+  const handleEditSave = async () => {
+    setSaving(true);
+    try { await updateProduct(editProduct._id, { ...editForm, price: Number(editForm.price), memberPrice: Number(editForm.memberPrice), stock: Number(editForm.stock) }); toast("Product updated!"); setEditProduct(null); load(); }
+    catch { toast("Failed to update", "error"); } finally { setSaving(false); }
+  };
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
@@ -197,6 +212,8 @@ function ProductsTab({ toast }) {
           <Plus size={14} /> Add Product
         </button>
       </div>
+
+      {/* Add Product Form */}
       <AnimatePresence>
         {showForm && (
           <motion.form onSubmit={handleAdd} initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
@@ -210,17 +227,97 @@ function ProductsTab({ toast }) {
                   {PCATS.map(c => <option key={c}>{c}</option>)}
                 </select>
               </div>
-              <div><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Image URL</label><input style={inp} value={form.image} onChange={e => setForm(p => ({ ...p, image: e.target.value }))} /></div>
               <div><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Stock</label><input type="number" style={inp} value={form.stock} onChange={e => setForm(p => ({ ...p, stock: e.target.value }))} /></div>
               <div style={{ gridColumn: "1 / -1" }}><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Description</label><textarea style={{ ...inp, resize: "vertical", minHeight: 56 }} value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} /></div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Main Image URL *</label>
+                <input required style={inp} value={form.image} onChange={e => setForm(p => ({ ...p, image: e.target.value }))} placeholder="https://images.unsplash.com/..." />
+                {form.image && <img src={form.image} alt="preview" style={{ width: 70, height: 70, objectFit: "cover", borderRadius: 8, marginTop: 6, border: "1px solid #ddd" }} onError={e => e.target.style.display="none"} />}
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Additional Images</label>
+                <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+                  <input style={{ ...inp, flex: 1 }} value={newImageUrl} onChange={e => setNewImageUrl(e.target.value)} placeholder="Paste image URL and click Add" />
+                  <button type="button" onClick={() => { if (newImageUrl.trim()) { setForm(p => ({ ...p, images: [...(p.images||[]), newImageUrl.trim()] })); setNewImageUrl(""); } }}
+                    style={{ background: "#1a1a2e", color: "#fff", border: "none", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontSize: 12, whiteSpace: "nowrap" }}>+ Add</button>
+                </div>
+                {form.images && form.images.length > 0 && (
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+                    {form.images.map((img, i) => (
+                      <div key={i} style={{ position: "relative" }}>
+                        <img src={img} alt="" style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 6, border: "1px solid #ddd" }} onError={e => e.target.style.display="none"} />
+                        <button type="button" onClick={() => setForm(p => ({ ...p, images: p.images.filter((_,idx) => idx !== i) }))}
+                          style={{ position: "absolute", top: -6, right: -6, background: "#E50010", color: "#fff", border: "none", borderRadius: "50%", width: 18, height: 18, cursor: "pointer", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
               <button type="submit" disabled={adding} style={{ background: "#1a1a2e", color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>{adding ? "Adding..." : "Add Product"}</button>
-              <button type="button" onClick={() => setShowForm(false)} style={{ background: "#eee", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13 }}>Cancel</button>
+              <button type="button" onClick={() => { setShowForm(false); setNewImageUrl(""); }} style={{ background: "#eee", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13 }}>Cancel</button>
             </div>
           </motion.form>
         )}
       </AnimatePresence>
+
+      {/* Edit Product Modal */}
+      <AnimatePresence>
+        {editProduct && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
+              style={{ background: "#fff", borderRadius: 16, padding: 24, width: "100%", maxWidth: 600, maxHeight: "90vh", overflowY: "auto" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Edit Product</h3>
+                <button onClick={() => setEditProduct(null)} style={{ background: "none", border: "none", cursor: "pointer" }}><X size={20} /></button>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 12 }}>
+                <div><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Name</label><input style={inp} value={editForm.name} onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} /></div>
+                <div><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Price (Rs.)</label><input type="number" style={inp} value={editForm.price} onChange={e => setEditForm(p => ({ ...p, price: e.target.value }))} /></div>
+                <div><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Member Price</label><input type="number" style={inp} value={editForm.memberPrice} onChange={e => setEditForm(p => ({ ...p, memberPrice: e.target.value }))} /></div>
+                <div><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Category</label>
+                  <select style={inp} value={editForm.category} onChange={e => setEditForm(p => ({ ...p, category: e.target.value }))}>
+                    {PCATS.map(c => <option key={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Stock</label><input type="number" style={inp} value={editForm.stock} onChange={e => setEditForm(p => ({ ...p, stock: e.target.value }))} /></div>
+                <div style={{ gridColumn: "1 / -1" }}><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Description</label><textarea style={{ ...inp, resize: "vertical", minHeight: 56 }} value={editForm.description} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))} /></div>
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Main Image URL</label>
+                  <input style={inp} value={editForm.image} onChange={e => setEditForm(p => ({ ...p, image: e.target.value }))} placeholder="https://images.unsplash.com/..." />
+                  {editForm.image && <img src={editForm.image} alt="preview" style={{ width: 70, height: 70, objectFit: "cover", borderRadius: 8, marginTop: 6, border: "1px solid #ddd" }} onError={e => e.target.style.display="none"} />}
+                </div>
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Additional Images</label>
+                  <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+                    <input style={{ ...inp, flex: 1 }} value={newEditImageUrl} onChange={e => setNewEditImageUrl(e.target.value)} placeholder="Paste image URL and click Add" />
+                    <button type="button" onClick={() => { if (newEditImageUrl.trim()) { setEditForm(p => ({ ...p, images: [...(p.images||[]), newEditImageUrl.trim()] })); setNewEditImageUrl(""); } }}
+                      style={{ background: "#1a1a2e", color: "#fff", border: "none", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontSize: 12, whiteSpace: "nowrap" }}>+ Add</button>
+                  </div>
+                  {editForm.images && editForm.images.length > 0 && (
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+                      {editForm.images.map((img, i) => (
+                        <div key={i} style={{ position: "relative" }}>
+                          <img src={img} alt="" style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 6, border: "1px solid #ddd" }} onError={e => e.target.style.display="none"} />
+                          <button type="button" onClick={() => setEditForm(p => ({ ...p, images: p.images.filter((_,idx) => idx !== i) }))}
+                            style={{ position: "absolute", top: -6, right: -6, background: "#E50010", color: "#fff", border: "none", borderRadius: "50%", width: 18, height: 18, cursor: "pointer", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+                <button onClick={handleEditSave} disabled={saving} style={{ background: "#1a1a2e", color: "#fff", border: "none", borderRadius: 8, padding: "10px 24px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>{saving ? "Saving..." : "Save Changes"}</button>
+                <button onClick={() => setEditProduct(null)} style={{ background: "#eee", border: "none", borderRadius: 8, padding: "10px 16px", cursor: "pointer", fontSize: 13 }}>Cancel</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {loading ? <Loader /> : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
           {products.map(p => (
@@ -243,14 +340,19 @@ function ProductsTab({ toast }) {
                     <>
                       <span style={{ fontWeight: 600, fontSize: 13 }}>{p.stock ?? 0}</span>
                       <button onClick={() => { setEditStock(prev => ({ ...prev, [p._id]: true })); setStockVal(prev => ({ ...prev, [p._id]: p.stock ?? 0 })); }} style={{ background: "#f0f0f0", border: "none", borderRadius: 6, padding: "3px 8px", cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", gap: 4 }}>
-                        <Edit2 size={11} /> Edit
+                        <Edit2 size={11} /> Stock
                       </button>
                     </>
                   )}
                 </div>
-                <button onClick={() => handleDelete(p._id)} style={{ width: "100%", background: "#FFEBEE", color: "#B71C1C", border: "none", borderRadius: 8, padding: "7px", cursor: "pointer", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                  <Trash2 size={13} /> Delete
-                </button>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={() => handleEditOpen(p)} style={{ flex: 1, background: "#E3F2FD", color: "#1565C0", border: "none", borderRadius: 8, padding: "7px", cursor: "pointer", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                    <Edit2 size={13} /> Edit
+                  </button>
+                  <button onClick={() => handleDelete(p._id)} style={{ flex: 1, background: "#FFEBEE", color: "#B71C1C", border: "none", borderRadius: 8, padding: "7px", cursor: "pointer", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                    <Trash2 size={13} /> Delete
+                  </button>
+                </div>
               </div>
             </div>
           ))}
