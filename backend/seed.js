@@ -28,14 +28,7 @@ const SEED_PRODUCTS = [
     image: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&q=90",
     stock: 20, inStock: true,
   },
-  {
-    name: "Crop Blazer Co-ord Set",
-    price: 3499, memberPrice: 2799,
-    category: "Ladies",
-    description: "Trendy crop blazer with matching trousers. Power dressing at its finest.",
-    image: "https://images.unsplash.com/photo-1594938298603-c8148c4b4f7b?w=800&q=90",
-    stock: 18, inStock: true,
-  },
+
   {
     name: "Satin Slip Dress",
     price: 2799, memberPrice: 2199,
