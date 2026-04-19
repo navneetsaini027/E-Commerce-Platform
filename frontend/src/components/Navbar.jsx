@@ -113,7 +113,7 @@ function LiveClock({ theme, isDark }) {
   );
 }
 
-export default function Navbar({ cartCount, wishlistCount, onCategoryChange, activeCategory, onAdminToggle, onCartOpen, onWishlistOpen, onAuthOpen, user, onLogout, onSearch, onOrdersOpen, onUserDashboard }) {
+export default function Navbar({ cartCount, wishlistCount, onCategoryChange, activeCategory, onAdminToggle, onCartOpen, onWishlistOpen, onAuthOpen, user, onLogout, onSearch, onOrdersOpen, onUserDashboard, onSpinOpen }) {
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -336,6 +336,14 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
               >
                 {isDark ? <Sun size={18} color={theme.colors.text} /> : <Moon size={18} color={theme.colors.text} />}
                 {isDark ? 'Light Mode' : 'Dark Mode'}
+              </button>
+
+              {/* Spin & Win */}
+              <button
+                onClick={() => { onSpinOpen(); setMobileMenuOpen(false); }}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', fontSize: 14, fontWeight: 700, color: '#E50010', background: 'none', border: 'none', cursor: 'pointer', borderBottom: `1px solid ${theme.colors.border}` }}
+              >
+                🎡 Spin & Win
               </button>
 
               {/* Categories */}

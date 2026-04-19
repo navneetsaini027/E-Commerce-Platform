@@ -39,7 +39,6 @@ import StarryBackground from './components/StarryBackground';
 import SpinWheel from './components/SpinWheel';
 import QuickView from './components/QuickView';
 import ParticleBackground from './components/ParticleBackground';
-import FloatingSpinButton from './components/FloatingSpinButton';
 import ProductComparison from './components/ProductComparison';
 
 const CART_KEY = 'aashirwad_cart';
@@ -402,6 +401,7 @@ function AppContent() {
         onWishlistOpen={() => setWishlistOpen(true)}
         onAuthOpen={() => setAuthOpen(true)}
         onOrdersOpen={() => setOrdersOpen(true)}
+        onSpinOpen={() => setSpinWheelOpen(true)}
         user={user}
         onLogout={handleLogout}
         onSearch={handleSearch}
@@ -525,8 +525,6 @@ function AppContent() {
 
       <ToastNotification />
       <LiveChat user={user} />
-
-      <FloatingSpinButton onClick={() => setSpinWheelOpen(true)} />
 
       <SpinWheel
         isOpen={spinWheelOpen}
