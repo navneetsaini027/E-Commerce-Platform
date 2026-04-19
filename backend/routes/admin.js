@@ -153,8 +153,6 @@ router.delete('/coupons/:id', adminAuth, async (req, res) => {
   }
 });
 
-module.exports = router;
-
 // PATCH toggle user role (admin)
 router.patch('/users/:id/role', adminAuth, async (req, res) => {
   try {
@@ -167,3 +165,5 @@ router.patch('/users/:id/role', adminAuth, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+module.exports = router;

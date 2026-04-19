@@ -162,9 +162,8 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         gap: 8,
       }}>
-        {/* LEFT: Hamburger + Brand Name */}
+        {/* LEFT: Hamburger (mobile) + Brand Name */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          {/* Mobile Hamburger - left of brand */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer', display: 'none' }}
@@ -173,15 +172,11 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
           >
             {mobileMenuOpen ? <X size={22} color={theme.colors.text} /> : <Menu size={22} color={theme.colors.text} />}
           </button>
-
           <a href="#" style={{
-            fontWeight: 700,
-            fontSize: 'clamp(11px, 1.6vw, 17px)',
-            letterSpacing: '0.04em',
-            whiteSpace: 'nowrap',
+            fontWeight: 700, fontSize: 'clamp(11px, 1.6vw, 17px)',
+            letterSpacing: '0.04em', whiteSpace: 'nowrap',
             fontFamily: '"Cinzel Decorative", serif',
-            color: theme.colors.text,
-            textDecoration: 'none',
+            color: theme.colors.text, textDecoration: 'none',
           }}>
             {BRAND.name}
           </a>
@@ -190,9 +185,7 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
         {/* Desktop Category Nav */}
         <nav style={{ display: 'flex', gap: 32 }} className="desktop-nav">
           {CATEGORIES.filter(c => c !== 'All').map(cat => (
-            <button
-              key={cat}
-              onClick={() => onCategoryChange(cat === activeCategory ? 'All' : cat)}
+            <button key={cat} onClick={() => onCategoryChange(cat === activeCategory ? 'All' : cat)}
               style={{
                 fontSize: 13, fontWeight: activeCategory === cat ? 700 : 400,
                 letterSpacing: '0.06em', textTransform: 'uppercase',
@@ -200,9 +193,7 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
                 borderBottom: activeCategory === cat ? `2px solid ${theme.colors.text}` : '2px solid transparent',
                 transition: 'all 0.2s ease', background: 'none',
               }}
-            >
-              {cat}
-            </button>
+            >{cat}</button>
           ))}
         </nav>
 
@@ -211,31 +202,16 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
           <LiveClock theme={theme} isDark={isDark} />
         </div>
 
-        {/* RIGHT ICONS - Both Mobile & Desktop */}
+        {/* RIGHT ICONS */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
 
           {/* Search */}
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <AnimatePresence>
               {searchOpen && (
-                <motion.div
-                  initial={{ width: 0, opacity: 0 }}
-                  animate={{ width: 150, opacity: 1 }}
-                  exit={{ width: 0, opacity: 0 }}
-                  transition={{ duration: 0.25 }}
-                  style={{ overflow: 'hidden' }}
-                >
-                  <input
-                    autoFocus
-                    value={searchQuery}
-                    onChange={e => handleSearchChange(e.target.value)}
-                    placeholder="Search..."
-                    style={{
-                      width: '100%', border: 'none', borderBottom: `1px solid ${theme.colors.text}`,
-                      outline: 'none', fontSize: 13, padding: '4px 0',
-                      background: 'transparent', color: theme.colors.text,
-                    }}
-                  />
+                <motion.div initial={{ width: 0, opacity: 0 }} animate={{ width: 150, opacity: 1 }} exit={{ width: 0, opacity: 0 }} transition={{ duration: 0.25 }} style={{ overflow: 'hidden' }}>
+                  <input autoFocus value={searchQuery} onChange={e => handleSearchChange(e.target.value)} placeholder="Search..."
+                    style={{ width: '100%', border: 'none', borderBottom: `1px solid ${theme.colors.text}`, outline: 'none', fontSize: 13, padding: '4px 0', background: 'transparent', color: theme.colors.text }} />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -264,7 +240,7 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
             )}
           </button>
 
-          {/* Account Avatar - visible on mobile next to cart */}
+          {/* Account Avatar - mobile only (next to cart) */}
           <div className="mobile-account">
             {!user ? (
               <button onClick={onAuthOpen} style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer' }}>
@@ -283,7 +259,8 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
             )}
           </div>
 
-          {/* Desktop extras */}          <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {/* Desktop only extras */}
+          <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <button onClick={toggleTheme} style={{ padding: 8, background: 'none', border: 'none', cursor: 'pointer' }}>
               <motion.div initial={false} animate={{ rotate: isDark ? 180 : 0 }} transition={{ duration: 0.3 }}>
                 {isDark ? <Sun size={18} color={theme.colors.text} /> : <Moon size={18} color={theme.colors.text} />}
@@ -301,11 +278,11 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
               </button>
             )}
             {!user ? (
-              <motion.button onClick={onAuthOpen} whileHover={{ scale: 1.04 }} style={{ background: '#E50010', color: '#fff', padding: '8px 18px', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', border: 'none', cursor: 'pointer', borderRadius: 999, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <motion.button onClick={onAuthOpen} whileHover={{ scale: 1.04 }} style={{ background: '#E50010', color: '#fff', padding: '8px 18px', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', border: 'none', cursor: 'pointer', borderRadius: 999, display: 'flex', alignItems: 'center', gap: 6, marginLeft: 4 }}>
                 <User size={13} /> Login
               </motion.button>
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 4 }}>
                 <button onClick={onUserDashboard} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                   {user.avatar ? (
                     <img src={user.avatar} alt={user.name} style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', border: '2px solid #E50010' }} />
@@ -318,9 +295,9 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
                     {user.name.split(' ')[0]}
                   </span>
                 </button>
-                <button onClick={onLogout} style={{ fontSize: 10, color: '#E50010', fontWeight: 700, padding: '5px 12px', border: '1px solid #E50010', borderRadius: 999, cursor: 'pointer', background: 'none' }}>
+                <motion.button onClick={onLogout} whileHover={{ scale: 1.04 }} style={{ fontSize: 10, color: '#E50010', fontWeight: 700, padding: '5px 12px', border: '1px solid #E50010', borderRadius: 999, cursor: 'pointer', background: 'none' }}>
                   Logout
-                </button>
+                </motion.button>
               </div>
             )}
           </div>
