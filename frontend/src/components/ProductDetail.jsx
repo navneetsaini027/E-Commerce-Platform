@@ -5,7 +5,7 @@ import ImageGallery from './ImageGallery';
 
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
-export default function ProductDetail({ product, onClose, onAddToCart, onOpenReview, user }) {
+export default function ProductDetail({ product, onClose, onAddToCart, onAddToWishlist, onOpenReview, user }) {
   const [selectedSize, setSelectedSize] = useState('');
   const [wishlisted, setWishlisted] = useState(false);
   const [added, setAdded] = useState(false);
@@ -194,12 +194,19 @@ export default function ProductDetail({ product, onClose, onAddToCart, onOpenRev
                 </button>
 
                 <button
-                  onClick={() => setWishlisted(!wishlisted)}
+                  onClick={() => { 
+                    if (onAddToWishlist) {
+                      onAddToWishlist(product);
+                      setWishlisted(true);
+                    }
+                  }}
                   style={{
                     width: 52, height: 52,
                     border: `1px solid ${wishlisted ? '#E50010' : '#d0d0d0'}`,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     transition: 'all 0.2s',
+                    background: 'none',
+                    cursor: 'pointer',
                   }}
                 >
                   <Heart

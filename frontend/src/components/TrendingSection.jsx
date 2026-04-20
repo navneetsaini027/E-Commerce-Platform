@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { getSiteSetting } from '../api/api';
+import { useState, useEffect } from 'react';
 
-const TRENDING = [
+const DEFAULT_TRENDING = [
   { label: "Men's Streetwear", image: 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=800&q=85', tag: 'Trending Now', color: '#1a1a1a', category: 'Men' },
   { label: "Women's Ethnic", image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&q=85', tag: 'Best Seller', color: '#8B1A1A', category: 'Traditional' },
   { label: "Couple Fits", image: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=800&q=85', tag: 'New In', color: '#1a3a2a', category: 'All' },
@@ -11,6 +13,11 @@ const TRENDING = [
 
 export default function TrendingSection({ onCategoryChange, onShopCategory }) {
   const { theme } = useTheme();
+  const [TRENDING, setTRENDING] = useState(DEFAULT_TRENDING);
+
+  useEffect(() => {
+    getSiteSetting('trending').then(res => { if (res.data) setTRENDING(res.data); }).catch(() => {});
+  }, []);
 
   return (
     <section style={{ padding: 'clamp(60px, 8vw, 100px) clamp(16px, 4vw, 60px)', background: theme.colors.background }}>

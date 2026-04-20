@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const SpinHistory = require('../models/SpinHistory');
+const User = require('../models/User');
 const { protect } = require('../middleware/auth');
+const { sendSpinWinEmail } = require('../utils/emailService');
 
 // Check if user can spin today
 router.get('/can-spin', protect, async (req, res) => {
@@ -52,6 +54,12 @@ router.post('/spin', protect, async (req, res) => {
       prize,
       couponCode,
     });
+
+    // Send email if won something
+    if (prize.value > 0) {
+      const user = await User.findById(req.user._id).select('email name');
+      if (user?.email) sendSpinWinEmail(user.email, user.name, prize.label);
+    }
 
     res.status(201).json({
       success: true,

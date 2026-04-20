@@ -1,16 +1,23 @@
 import { motion } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
+import { getSiteSetting } from '../api/api';
+import { useState, useEffect } from 'react';
 
-const LOOKS = [
-  { image: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600&q=85', label: 'Street Style', span: 'row', category: 'All' },
-  { image: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=600&q=85', label: 'Boho Chic', category: 'Ladies' },
-  { image: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&q=85', label: 'Ethnic Glam', category: 'Traditional' },
-  { image: 'https://images.unsplash.com/photo-1488161628813-04466f872be2?w=600&q=85', label: 'Smart Casual', span: 'row', category: 'Men' },
-  { image: 'https://images.unsplash.com/photo-1617922001439-4a2e6562f328?w=600&q=85', label: 'Festive Wear', category: 'Traditional' },
+const DEFAULT_LOOKS = [
+  { id: 1, image: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600&q=85', label: 'Street Style', title: 'Street Style', subtitle: 'Urban cool vibes', span: 'row', category: 'All' },
+  { id: 2, image: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=600&q=85', label: 'Boho Chic', title: 'Boho Chic', subtitle: 'Free spirit fashion', category: 'Ladies' },
+  { id: 3, image: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&q=85', label: 'Ethnic Glam', title: 'Ethnic Glam', subtitle: 'Heritage reimagined', category: 'Traditional' },
+  { id: 4, image: 'https://images.unsplash.com/photo-1488161628813-04466f872be2?w=600&q=85', label: 'Smart Casual', title: 'Smart Casual', subtitle: 'Effortless style', span: 'row', category: 'Men' },
+  { id: 5, image: 'https://images.unsplash.com/photo-1617922001439-4a2e6562f328?w=600&q=85', label: 'Festive Wear', title: 'Festive Wear', subtitle: 'Celebrate in style', category: 'Traditional' },
 ];
 
 export default function StyleLookbook({ onShopCategory }) {
   const { theme } = useTheme();
+  const [LOOKS, setLOOKS] = useState(DEFAULT_LOOKS);
+
+  useEffect(() => {
+    getSiteSetting('lookbook').then(res => { if (res.data) setLOOKS(res.data); }).catch(() => {});
+  }, []);
 
   return (
     <section style={{

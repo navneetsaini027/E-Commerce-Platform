@@ -395,7 +395,7 @@ function AppContent() {
         wishlistCount={wishlist.length}
         activeCategory={activeCategory}
         onCategoryChange={setActiveCategory}
-        onAdminToggle={() => user?.role === 'admin' ? setAdminDashboardOpen(true) : null}
+        onAdminToggle={() => (user?.role === 'admin' || user?.role === 'owner') ? setAdminDashboardOpen(true) : null}
         onUserDashboard={() => setUserDashboardOpen(true)}
         onCartOpen={() => setCartOpen(true)}
         onWishlistOpen={() => setWishlistOpen(true)}
@@ -446,6 +446,7 @@ function AppContent() {
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
         onAddToCart={handleAddToCart}
+        onAddToWishlist={handleAddToWishlist}
         onOpenReview={handleOpenReview}
         user={user}
       />

@@ -272,7 +272,7 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
                 <Package size={18} color={theme.colors.text} />
               </button>
             )}
-            {user?.role === 'admin' && (
+            {(user?.role === 'admin' || user?.role === 'owner') && (
               <button onClick={onAdminToggle} style={{ padding: 8, background: 'none', border: 'none', cursor: 'pointer' }}>
                 <Settings size={18} color="#E50010" />
               </button>
@@ -383,8 +383,8 @@ export default function Navbar({ cartCount, wishlistCount, onCategoryChange, act
                     <User size={18} color={theme.colors.text} /> My Dashboard
                   </button>
 
-                  {/* Admin Panel - only for admin */}
-                  {user?.role === 'admin' && (
+                  {/* Admin Panel - only for admin/owner */}
+                  {(user?.role === 'admin' || user?.role === 'owner') && (
                     <button onClick={() => { onAdminToggle(); setMobileMenuOpen(false); }}
                       style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '12px 0', fontSize: 14, fontWeight: 700, color: '#E50010', background: 'none', border: 'none', cursor: 'pointer', borderBottom: `1px solid ${theme.colors.border}` }}>
                       <Settings size={18} color="#E50010" /> Admin Panel

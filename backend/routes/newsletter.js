@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Newsletter = require('../models/Newsletter');
+const { sendNewsletterEmail } = require('../utils/emailService');
 
 // POST subscribe
 router.post('/subscribe', async (req, res) => {
@@ -13,11 +14,13 @@ router.post('/subscribe', async (req, res) => {
       if (existing.isActive) return res.status(400).json({ message: 'Already subscribed!' });
       existing.isActive = true;
       await existing.save();
+      sendNewsletterEmail(email);
       return res.json({ message: 'Welcome back! You are subscribed again.' });
     }
 
     await Newsletter.create({ email });
-    res.status(201).json({ message: 'Subscribed successfully! Check your inbox for your 15% discount code.' });
+    sendNewsletterEmail(email); // Send welcome newsletter email
+    res.status(201).json({ message: 'Subscribed successfully! Check your inbox for your 10% discount code.' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

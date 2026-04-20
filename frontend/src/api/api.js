@@ -53,6 +53,7 @@ export const getAdminOrders = (params) => API.get('/admin/orders', { params });
 export const updateOrderStatus = (id, status) => API.patch(`/admin/orders/${id}/status`, { status });
 export const getAdminUsers = () => API.get('/admin/users');
 export const updateUserRole = (id, role) => API.patch(`/admin/users/${id}/role`, { role });
+export const deleteUser = (id) => API.delete(`/admin/users/${id}`);
 export const updateProduct = (id, data) => API.patch(`/admin/products/${id}`, data);
 export const getAdminNewsletter = () => API.get('/admin/newsletter');
 export const getAdminCoupons = () => API.get('/admin/coupons');
@@ -71,8 +72,14 @@ export const trackProductView = (productId, sessionId) => API.post('/view-histor
 export const getRecentlyViewed = (sessionId, limit = 8) => API.get('/view-history/recent', { params: { sessionId, limit } });
 export const clearViewHistory = () => API.delete('/view-history/clear');
 
-// Wishlist Collections
-export const getWishlistCollections = () => API.get('/wishlist-collections');
+// Site Settings (Trending, Gift, Lookbook)
+export const getSiteSetting = (key) => API.get(`/settings/${key}`);
+export const updateSiteSetting = (key, value) => API.put(`/settings/${key}`, { value });
+
+// Payment - Razorpay
+export const createRazorpayOrder = (amount) => API.post('/payment/create-order', { amount });
+export const verifyPayment = (data) => API.post('/payment/verify', data);
+export const getRazorpayKey = () => API.get('/payment/key');
 export const createWishlistCollection = (data) => API.post('/wishlist-collections', data);
 export const getWishlistCollection = (id) => API.get(`/wishlist-collections/${id}`);
 export const updateWishlistCollection = (id, data) => API.put(`/wishlist-collections/${id}`, data);

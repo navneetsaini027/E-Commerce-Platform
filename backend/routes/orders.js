@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
+const User = require('../models/User');
 const Notification = require('../models/Notification');
 const jwt = require('jsonwebtoken');
+const { sendOrderConfirmationEmail, sendOrderStatusEmail } = require('../utils/emailService');
 
 // Middleware to verify token
 const auth = (req, res, next) => {
@@ -27,6 +29,11 @@ router.post('/', auth, async (req, res) => {
       title: 'Order Placed Successfully!',
       message: `Your order #${order._id.toString().slice(-8).toUpperCase()} has been placed. Total: ₹${order.totalAmount.toLocaleString()}`,
     });
+    // Send order confirmation email (non-blocking)
+    const user = await User.findById(req.user.id).select('email name');
+    if (user?.email) {
+      sendOrderConfirmationEmail(user.email, user.name, order);
+    }
     res.status(201).json(order);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -82,6 +89,9 @@ router.patch('/:id/status', auth, async (req, res) => {
         title: `Order ${status.charAt(0).toUpperCase() + status.slice(1)}`,
         message: msgs[status],
       });
+      // Send status email
+      const user = await User.findById(order.user).select('email name');
+      if (user?.email) sendOrderStatusEmail(user.email, user.name, order._id, status);
     }
     res.json(order);
   } catch (err) {

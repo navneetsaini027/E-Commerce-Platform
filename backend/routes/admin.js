@@ -7,14 +7,16 @@ const Newsletter = require('../models/Newsletter');
 const Coupon = require('../models/Coupon');
 const jwt = require('jsonwebtoken');
 
-// Admin auth middleware
-const adminAuth = (req, res, next) => {
+// Admin auth middleware - checks DB role (not just token)
+const adminAuth = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ message: 'No token' });
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.role !== 'admin') return res.status(403).json({ message: 'Admin access required' });
-    req.user = decoded;
+    // Check actual DB role (not cached token role)
+    const user = await User.findById(decoded.id).select('role');
+    if (!user || (user.role !== 'admin' && user.role !== 'owner')) return res.status(403).json({ message: 'Admin access required' });
+    req.user = { ...decoded, role: user.role };
     next();
   } catch {
     res.status(401).json({ message: 'Invalid token' });
@@ -153,14 +155,48 @@ router.delete('/coupons/:id', adminAuth, async (req, res) => {
   }
 });
 
-// PATCH toggle user role (admin)
+// PATCH toggle user role (admin) - owner can make/remove admins, admin cannot touch owner
 router.patch('/users/:id/role', adminAuth, async (req, res) => {
   try {
     const { role } = req.body;
     if (!['admin', 'user'].includes(role)) return res.status(400).json({ message: 'Invalid role' });
+    
+    const targetUser = await User.findById(req.params.id);
+    if (!targetUser) return res.status(404).json({ message: 'User not found' });
+    
+    // Cannot change owner's role
+    if (targetUser.role === 'owner') return res.status(403).json({ message: 'Cannot change owner role' });
+    
+    // Only owner can make someone admin
+    const requestingUser = await User.findById(req.user.id);
+    if (role === 'admin' && requestingUser.role !== 'owner' && requestingUser.role !== 'admin') {
+      return res.status(403).json({ message: 'Only owner can assign admin role' });
+    }
+
     const user = await User.findByIdAndUpdate(req.params.id, { role }, { new: true }).select('-password');
-    if (!user) return res.status(404).json({ message: 'User not found' });
     res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// DELETE user (owner only)
+router.delete('/users/:id', adminAuth, async (req, res) => {
+  try {
+    const targetUser = await User.findById(req.params.id);
+    if (!targetUser) return res.status(404).json({ message: 'User not found' });
+    
+    // Cannot delete owner
+    if (targetUser.role === 'owner') return res.status(403).json({ message: 'Cannot delete owner' });
+    
+    // Only owner can delete admins
+    const requestingUser = await User.findById(req.user.id);
+    if (targetUser.role === 'admin' && requestingUser.role !== 'owner') {
+      return res.status(403).json({ message: 'Only owner can delete admins' });
+    }
+
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: 'User deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

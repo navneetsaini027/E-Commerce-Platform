@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion';
-import { Gift, Heart, Star } from 'lucide-react';
+import { Gift } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { getSiteSetting } from '../api/api';
+import { useState, useEffect } from 'react';
 
-const GIFTS = [
+const DEFAULT_GIFTS = [
   { image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600&q=85', title: 'Gift for Her', desc: 'Sarees, Kurtis & Ethnic Sets', price: 'From ₹799', badge: '❤️ Most Loved', category: 'Ladies' },
   { image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=600&q=85', title: 'Gift for Him', desc: 'Shirts, Joggers & Sneakers', price: 'From ₹599', badge: '🔥 Top Picks', category: 'Men' },
   { image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=600&q=85', title: 'Gift Combos', desc: 'Curated sets for every occasion', price: 'From ₹1299', badge: '🎁 Best Value', category: 'All' },
@@ -10,6 +12,11 @@ const GIFTS = [
 
 export default function GiftSection({ onShopCategory }) {
   const { theme } = useTheme();
+  const [GIFTS, setGIFTS] = useState(DEFAULT_GIFTS);
+
+  useEffect(() => {
+    getSiteSetting('gifts').then(res => { if (res.data) setGIFTS(res.data); }).catch(() => {});
+  }, []);
 
   return (
     <section style={{

@@ -1,9 +1,10 @@
 ﻿import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Mail, Plus, Trash2, Edit2, X, Check, TrendingUp, AlertCircle, RefreshCw, LogOut, Search, Menu } from "lucide-react";
-import { getAdminStats, getAdminOrders, updateOrderStatus, getAdminUsers, updateUserRole, getProducts, addProduct, deleteProduct, updateProductStock, getAdminCoupons, createCoupon, deleteCoupon, getAdminNewsletter } from "../api/api";
+import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Mail, Plus, Trash2, Edit2, X, Check, TrendingUp, AlertCircle, RefreshCw, LogOut, Search, Menu, Image } from "lucide-react";
+import { getAdminStats, getAdminOrders, updateOrderStatus, getAdminUsers, updateUserRole, deleteUser, getProducts, addProduct, deleteProduct, updateProductStock, getAdminCoupons, createCoupon, deleteCoupon, getAdminNewsletter, updateProduct, getSiteSetting, updateSiteSetting } from "../api/api";
 import { useTheme } from "../contexts/ThemeContext";
 import { CATEGORIES } from "../data/products";
+import ImageUploader from "./ImageUploader";
 
 const STATUS_COLORS = {
   pending:    { bg: "#FFF3E0", text: "#E65100", border: "#FFB74D" },
@@ -14,12 +15,15 @@ const STATUS_COLORS = {
 };
 
 const TABS = [
-  { id: "overview",   label: "Overview",   icon: LayoutDashboard },
-  { id: "orders",     label: "Orders",     icon: ShoppingBag },
-  { id: "products",   label: "Products",   icon: Package },
-  { id: "users",      label: "Users",      icon: Users },
-  { id: "coupons",    label: "Coupons",    icon: Tag },
-  { id: "newsletter", label: "Newsletter", icon: Mail },
+  { id: "overview",   label: "Dashboard Overview", icon: LayoutDashboard },
+  { id: "orders",     label: "Manage Orders",      icon: ShoppingBag },
+  { id: "products",   label: "Manage Products",    icon: Package },
+  { id: "users",      label: "Manage Users",       icon: Users },
+  { id: "coupons",    label: "Discount Coupons",   icon: Tag },
+  { id: "newsletter", label: "Newsletter",         icon: Mail },
+  { id: "trending",   label: "Trending Banners",   icon: TrendingUp },
+  { id: "gifts",      label: "Gift Section",       icon: Package },
+  { id: "lookbook",   label: "Style Lookbook",     icon: Image },
 ];
 
 function StatusBadge({ status }) {
@@ -230,9 +234,7 @@ function ProductsTab({ toast }) {
               <div><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Stock</label><input type="number" style={inp} value={form.stock} onChange={e => setForm(p => ({ ...p, stock: e.target.value }))} /></div>
               <div style={{ gridColumn: "1 / -1" }}><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Description</label><textarea style={{ ...inp, resize: "vertical", minHeight: 56 }} value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} /></div>
               <div style={{ gridColumn: "1 / -1" }}>
-                <label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Main Image URL *</label>
-                <input required style={inp} value={form.image} onChange={e => setForm(p => ({ ...p, image: e.target.value }))} placeholder="https://images.unsplash.com/..." />
-                {form.image && <img src={form.image} alt="preview" style={{ width: 70, height: 70, objectFit: "cover", borderRadius: 8, marginTop: 6, border: "1px solid #ddd" }} onError={e => e.target.style.display="none"} />}
+                <ImageUploader label="Main Image *" value={form.image} onChange={url => setForm(p => ({ ...p, image: url }))} />
               </div>
               <div style={{ gridColumn: "1 / -1" }}>
                 <label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Additional Images</label>
@@ -285,9 +287,7 @@ function ProductsTab({ toast }) {
                 <div><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Stock</label><input type="number" style={inp} value={editForm.stock} onChange={e => setEditForm(p => ({ ...p, stock: e.target.value }))} /></div>
                 <div style={{ gridColumn: "1 / -1" }}><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Description</label><textarea style={{ ...inp, resize: "vertical", minHeight: 56 }} value={editForm.description} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))} /></div>
                 <div style={{ gridColumn: "1 / -1" }}>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Main Image URL</label>
-                  <input style={inp} value={editForm.image} onChange={e => setEditForm(p => ({ ...p, image: e.target.value }))} placeholder="https://images.unsplash.com/..." />
-                  {editForm.image && <img src={editForm.image} alt="preview" style={{ width: 70, height: 70, objectFit: "cover", borderRadius: 8, marginTop: 6, border: "1px solid #ddd" }} onError={e => e.target.style.display="none"} />}
+                  <ImageUploader label="Main Image" value={editForm.image} onChange={url => setEditForm(p => ({ ...p, image: url }))} />
                 </div>
                 <div style={{ gridColumn: "1 / -1" }}>
                   <label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Additional Images</label>
@@ -367,6 +367,7 @@ function UsersTab({ toast }) {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [toggling, setToggling] = useState(null);
+  const [deleting, setDeleting] = useState(null);
 
   const load = () => { getAdminUsers().then(r => setUsers(r.data)).catch(() => toast("Failed", "error")).finally(() => setLoading(false)); };
   useEffect(load, []);
@@ -379,8 +380,19 @@ function UsersTab({ toast }) {
       await updateUserRole(u._id, newRole);
       setUsers(prev => prev.map(x => x._id === u._id ? { ...x, role: newRole } : x));
       toast(`${u.name} is now ${newRole}`);
-    } catch { toast("Failed to update role", "error"); }
+    } catch (err) { toast(err.response?.data?.message || "Failed to update role", "error"); }
     finally { setToggling(null); }
+  };
+
+  const handleDelete = async (u) => {
+    if (!window.confirm(`Delete ${u.name}? This cannot be undone!`)) return;
+    setDeleting(u._id);
+    try {
+      await deleteUser(u._id);
+      setUsers(prev => prev.filter(x => x._id !== u._id));
+      toast(`${u.name} deleted`);
+    } catch (err) { toast(err.response?.data?.message || "Failed to delete", "error"); }
+    finally { setDeleting(null); }
   };
 
   const filtered = users.filter(u => !search || (u.name||"").toLowerCase().includes(search.toLowerCase()) || (u.email||"").toLowerCase().includes(search.toLowerCase()));
@@ -395,7 +407,7 @@ function UsersTab({ toast }) {
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead><tr style={{ background: "#f8f8f8" }}>
-              {["Name","Email","Role","Joined","Action"].map(h => <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontWeight: 600, color: "#555", borderBottom: "2px solid #eee" }}>{h}</th>)}
+              {["Name","Email","Role","Joined","Actions"].map(h => <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontWeight: 600, color: "#555", borderBottom: "2px solid #eee" }}>{h}</th>)}
             </tr></thead>
             <tbody>
               {filtered.length === 0 ? <tr><td colSpan={5} style={{ textAlign: "center", padding: 40, color: "#aaa" }}>No users</td></tr>
@@ -404,22 +416,26 @@ function UsersTab({ toast }) {
                   <td style={{ padding: "10px 12px", fontWeight: 600 }}>{u.name}</td>
                   <td style={{ padding: "10px 12px", color: "#555" }}>{u.email}</td>
                   <td style={{ padding: "10px 12px" }}>
-                    <span style={{ background: u.role === "admin" ? "#E3F2FD" : "#F3E5F5", color: u.role === "admin" ? "#0D47A1" : "#6A1B9A", padding: "2px 10px", borderRadius: 20, fontSize: 12, fontWeight: 600 }}>{u.role || "user"}</span>
+                    <span style={{ background: u.role === "owner" ? "#FFF3E0" : u.role === "admin" ? "#E3F2FD" : "#F3E5F5", color: u.role === "owner" ? "#E65100" : u.role === "admin" ? "#0D47A1" : "#6A1B9A", padding: "2px 10px", borderRadius: 20, fontSize: 12, fontWeight: 600 }}>
+                      {u.role || "user"}
+                    </span>
                   </td>
                   <td style={{ padding: "10px 12px", color: "#888" }}>{new Date(u.createdAt).toLocaleDateString()}</td>
                   <td style={{ padding: "10px 12px" }}>
-                    <button
-                      onClick={() => handleRoleToggle(u)}
-                      disabled={toggling === u._id}
-                      style={{
-                        padding: "4px 12px", borderRadius: 20, border: "none", cursor: "pointer", fontSize: 11, fontWeight: 700,
-                        background: u.role === "admin" ? "#FFEBEE" : "#E8F5E9",
-                        color: u.role === "admin" ? "#B71C1C" : "#1B5E20",
-                        opacity: toggling === u._id ? 0.6 : 1,
-                      }}
-                    >
-                      {toggling === u._id ? "..." : u.role === "admin" ? "Remove Admin" : "Make Admin"}
-                    </button>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {u.role !== "owner" && (
+                        <button onClick={() => handleRoleToggle(u)} disabled={toggling === u._id}
+                          style={{ padding: "4px 10px", borderRadius: 20, border: "none", cursor: "pointer", fontSize: 11, fontWeight: 700, background: u.role === "admin" ? "#FFEBEE" : "#E8F5E9", color: u.role === "admin" ? "#B71C1C" : "#1B5E20", opacity: toggling === u._id ? 0.6 : 1 }}>
+                          {toggling === u._id ? "..." : u.role === "admin" ? "Remove Admin" : "Make Admin"}
+                        </button>
+                      )}
+                      {u.role !== "owner" && (
+                        <button onClick={() => handleDelete(u)} disabled={deleting === u._id}
+                          style={{ padding: "4px 10px", borderRadius: 20, border: "none", cursor: "pointer", fontSize: 11, fontWeight: 700, background: "#FFEBEE", color: "#B71C1C", opacity: deleting === u._id ? 0.6 : 1 }}>
+                          {deleting === u._id ? "..." : "Delete"}
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -542,6 +558,256 @@ function NewsletterTab({ toast }) {
   );
 }
 
+// ─── TRENDING BANNERS TAB ─────────────────────────────────────────────────────
+const DEFAULT_TRENDING = [
+  { id: 1, label: "Men's Streetwear", image: 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=800&q=85', tag: 'Trending Now', category: 'Men' },
+  { id: 2, label: "Women's Ethnic", image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&q=85', tag: 'Best Seller', category: 'Traditional' },
+  { id: 3, label: "Couple Fits", image: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=800&q=85', tag: 'New In', category: 'All' },
+  { id: 4, label: "Summer Casuals", image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=85', tag: 'Hot Pick', category: 'Ladies' },
+];
+
+function TrendingBannersTab({ toast }) {
+  const [items, setItems] = useState(DEFAULT_TRENDING);
+  const [editing, setEditing] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const inp = { width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid #ddd", fontSize: 13, outline: "none", boxSizing: "border-box" };
+
+  useEffect(() => {
+    getSiteSetting('trending').then(res => { if (res.data) setItems(res.data); }).catch(() => {});
+  }, []);
+
+  const save = async (updated) => {
+    setSaving(true);
+    try {
+      await updateSiteSetting('trending', updated);
+      setItems(updated);
+      toast("Trending banners updated! ✅");
+    } catch { toast("Failed to save", "error"); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div>
+      <p style={{ fontSize: 13, color: "#888", marginBottom: 20 }}>Edit the 4 trending category banners shown on homepage.</p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
+        {items.map((item, i) => (
+          <div key={item.id} style={{ background: "#fff", borderRadius: 14, border: "1px solid #eee", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
+            <div style={{ height: 140, overflow: "hidden", position: "relative" }}>
+              <img src={item.image} alt={item.label} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.src = "https://via.placeholder.com/300x140"} />
+              <span style={{ position: "absolute", top: 8, left: 8, background: "#E50010", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 8px" }}>{item.tag}</span>
+            </div>
+            <div style={{ padding: "12px 14px" }}>
+              <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{item.label}</p>
+              <p style={{ fontSize: 12, color: "#888", marginBottom: 10 }}>Category: {item.category}</p>
+              <button onClick={() => setEditing({ ...item, index: i })}
+                style={{ width: "100%", background: "#E3F2FD", color: "#1565C0", border: "none", borderRadius: 8, padding: "7px", cursor: "pointer", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                <Edit2 size={13} /> Edit Banner
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {editing && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
+              style={{ background: "#fff", borderRadius: 16, padding: 24, width: "100%", maxWidth: 500 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Edit Trending Banner</h3>
+                <button onClick={() => setEditing(null)} style={{ background: "none", border: "none", cursor: "pointer" }}><X size={20} /></button>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Label</label><input style={inp} value={editing.label} onChange={e => setEditing(p => ({ ...p, label: e.target.value }))} /></div>
+                <div><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Tag (e.g. Trending Now)</label><input style={inp} value={editing.tag} onChange={e => setEditing(p => ({ ...p, tag: e.target.value }))} /></div>
+                <div><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Category</label>
+                  <select style={inp} value={editing.category} onChange={e => setEditing(p => ({ ...p, category: e.target.value }))}>
+                    {['All','Ladies','Men','Jeans','T-shirts','Shirts','Traditional'].map(c => <option key={c}>{c}</option>)}
+                  </select>
+                </div>
+                <ImageUploader label="Banner Image" value={editing.image} onChange={url => setEditing(p => ({ ...p, image: url }))} />
+              </div>
+              <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+                <button onClick={() => { const updated = [...items]; updated[editing.index] = { id: editing.id, label: editing.label, tag: editing.tag, category: editing.category, image: editing.image, color: editing.color || '#1a1a1a' }; save(updated); setEditing(null); }}
+                  style={{ background: "#1a1a2e", color: "#fff", border: "none", borderRadius: 8, padding: "10px 24px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Save</button>
+                <button onClick={() => setEditing(null)} style={{ background: "#eee", border: "none", borderRadius: 8, padding: "10px 16px", cursor: "pointer", fontSize: 13 }}>Cancel</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── GIFT SECTION TAB ─────────────────────────────────────────────────────────
+const DEFAULT_GIFTS = [
+  { id: 1, title: 'Gift for Her', desc: 'Sarees, Kurtis & Ethnic Sets', price: 'From ₹799', badge: '❤️ Most Loved', category: 'Ladies', image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600&q=85' },
+  { id: 2, title: 'Gift for Him', desc: 'Shirts, Joggers & Sneakers', price: 'From ₹599', badge: '🔥 Top Picks', category: 'Men', image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=600&q=85' },
+  { id: 3, title: 'Gift Combos', desc: 'Curated sets for every occasion', price: 'From ₹1299', badge: '🎁 Best Value', category: 'All', image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=600&q=85' },
+];
+
+function GiftSectionTab({ toast }) {
+  const [items, setItems] = useState(DEFAULT_GIFTS);
+  const [editing, setEditing] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const inp = { width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid #ddd", fontSize: 13, outline: "none", boxSizing: "border-box" };
+
+  useEffect(() => {
+    getSiteSetting('gifts').then(res => { if (res.data) setItems(res.data); }).catch(() => {});
+  }, []);
+
+  const save = async (updated) => {
+    setSaving(true);
+    try {
+      await updateSiteSetting('gifts', updated);
+      setItems(updated);
+      toast("Gift section updated! ✅");
+    } catch { toast("Failed to save", "error"); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div>
+      <p style={{ fontSize: 13, color: "#888", marginBottom: 20 }}>Edit the 3 gift cards shown on homepage.</p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
+        {items.map((item, i) => (
+          <div key={item.id} style={{ background: "#fff", borderRadius: 14, border: "1px solid #eee", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
+            <div style={{ height: 140, overflow: "hidden" }}>
+              <img src={item.image} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.src = "https://via.placeholder.com/300x140"} />
+            </div>
+            <div style={{ padding: "12px 14px" }}>
+              <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{item.title}</p>
+              <p style={{ fontSize: 12, color: "#888", marginBottom: 4 }}>{item.desc}</p>
+              <p style={{ fontSize: 13, color: "#E50010", fontWeight: 700, marginBottom: 10 }}>{item.price}</p>
+              <button onClick={() => setEditing({ ...item, index: i })}
+                style={{ width: "100%", background: "#E3F2FD", color: "#1565C0", border: "none", borderRadius: 8, padding: "7px", cursor: "pointer", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                <Edit2 size={13} /> Edit Card
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <AnimatePresence>
+        {editing && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
+              style={{ background: "#fff", borderRadius: 16, padding: 24, width: "100%", maxWidth: 500, maxHeight: "90vh", overflowY: "auto" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Edit Gift Card</h3>
+                <button onClick={() => setEditing(null)} style={{ background: "none", border: "none", cursor: "pointer" }}><X size={20} /></button>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Title</label><input style={inp} value={editing.title} onChange={e => setEditing(p => ({ ...p, title: e.target.value }))} /></div>
+                <div><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Description</label><input style={inp} value={editing.desc} onChange={e => setEditing(p => ({ ...p, desc: e.target.value }))} /></div>
+                <div><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Price Text</label><input style={inp} value={editing.price} onChange={e => setEditing(p => ({ ...p, price: e.target.value }))} /></div>
+                <div><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Badge</label><input style={inp} value={editing.badge} onChange={e => setEditing(p => ({ ...p, badge: e.target.value }))} /></div>
+                <div><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Category</label>
+                  <select style={inp} value={editing.category} onChange={e => setEditing(p => ({ ...p, category: e.target.value }))}>
+                    {['All','Ladies','Men','Jeans','T-shirts','Shirts','Traditional'].map(c => <option key={c}>{c}</option>)}
+                  </select>
+                </div>
+                <ImageUploader label="Card Image" value={editing.image} onChange={url => setEditing(p => ({ ...p, image: url }))} />
+              </div>
+              <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+                <button onClick={() => { const updated = [...items]; updated[editing.index] = { ...editing }; save(updated); setEditing(null); }}
+                  style={{ background: "#1a1a2e", color: "#fff", border: "none", borderRadius: 8, padding: "10px 24px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Save</button>
+                <button onClick={() => setEditing(null)} style={{ background: "#eee", border: "none", borderRadius: 8, padding: "10px 16px", cursor: "pointer", fontSize: 13 }}>Cancel</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── LOOKBOOK TAB ─────────────────────────────────────────────────────────────
+const DEFAULT_LOOKBOOK = [
+  { id: 1, title: 'Urban Minimalist', subtitle: 'Clean lines, bold statements', image: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&q=85', category: 'Ladies' },
+  { id: 2, title: 'Street Culture', subtitle: 'Where comfort meets style', image: 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=800&q=85', category: 'Men' },
+  { id: 3, title: 'Ethnic Luxe', subtitle: 'Heritage reimagined', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&q=85', category: 'Traditional' },
+  { id: 4, title: 'Denim Stories', subtitle: 'Timeless denim looks', image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=800&q=85', category: 'Jeans' },
+];
+
+function LookbookTab({ toast }) {
+  const [items, setItems] = useState(DEFAULT_LOOKBOOK);
+  const [editing, setEditing] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const inp = { width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid #ddd", fontSize: 13, outline: "none", boxSizing: "border-box" };
+
+  useEffect(() => {
+    getSiteSetting('lookbook').then(res => { if (res.data) setItems(res.data); }).catch(() => {});
+  }, []);
+
+  const save = async (updated) => {
+    setSaving(true);
+    try {
+      await updateSiteSetting('lookbook', updated);
+      setItems(updated);
+      toast("Lookbook updated! ✅");
+    } catch { toast("Failed to save", "error"); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div>
+      <p style={{ fontSize: 13, color: "#888", marginBottom: 20 }}>Edit the Style Lookbook section shown on homepage.</p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
+        {items.map((item, i) => (
+          <div key={item.id} style={{ background: "#fff", borderRadius: 14, border: "1px solid #eee", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
+            <div style={{ height: 160, overflow: "hidden", position: "relative" }}>
+              <img src={item.image} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.src = "https://via.placeholder.com/300x160"} />
+            </div>
+            <div style={{ padding: "12px 14px" }}>
+              <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{item.title}</p>
+              <p style={{ fontSize: 12, color: "#888", marginBottom: 10 }}>{item.subtitle}</p>
+              <button onClick={() => setEditing({ ...item, index: i })}
+                style={{ width: "100%", background: "#E3F2FD", color: "#1565C0", border: "none", borderRadius: 8, padding: "7px", cursor: "pointer", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                <Edit2 size={13} /> Edit Look
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <AnimatePresence>
+        {editing && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
+              style={{ background: "#fff", borderRadius: 16, padding: 24, width: "100%", maxWidth: 500, maxHeight: "90vh", overflowY: "auto" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Edit Lookbook Item</h3>
+                <button onClick={() => setEditing(null)} style={{ background: "none", border: "none", cursor: "pointer" }}><X size={20} /></button>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Title</label><input style={inp} value={editing.title} onChange={e => setEditing(p => ({ ...p, title: e.target.value }))} /></div>
+                <div><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Subtitle</label><input style={inp} value={editing.subtitle} onChange={e => setEditing(p => ({ ...p, subtitle: e.target.value }))} /></div>
+                <div><label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Category</label>
+                  <select style={inp} value={editing.category} onChange={e => setEditing(p => ({ ...p, category: e.target.value }))}>
+                    {['All','Ladies','Men','Jeans','T-shirts','Shirts','Traditional'].map(c => <option key={c}>{c}</option>)}
+                  </select>
+                </div>
+                <ImageUploader label="Lookbook Image" value={editing.image} onChange={url => setEditing(p => ({ ...p, image: url }))} />
+              </div>
+              <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+                <button onClick={() => { const updated = [...items]; updated[editing.index] = { ...editing }; save(updated); setEditing(null); }}
+                  style={{ background: "#1a1a2e", color: "#fff", border: "none", borderRadius: 8, padding: "10px 24px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Save</button>
+                <button onClick={() => setEditing(null)} style={{ background: "#eee", border: "none", borderRadius: 8, padding: "10px 16px", cursor: "pointer", fontSize: 13 }}>Cancel</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export default function AdminDashboard({ user, onLogout, onClose }) {
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState("overview");
@@ -549,7 +815,7 @@ export default function AdminDashboard({ user, onLogout, onClose }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const showToast = (msg, type = "success") => setToastData({ msg, type });
 
-  if (!user || user.role !== "admin") {
+  if (!user || (user.role !== 'admin' && user.role !== 'owner')) {
     return (
       <div style={{ position: "fixed", inset: 0, zIndex: 2000, background: theme.colors.background, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20 }}>
         <AlertCircle size={56} color="#E50010" />
@@ -647,6 +913,9 @@ export default function AdminDashboard({ user, onLogout, onClose }) {
               {activeTab === "users"      && <UsersTab       {...tabProps} />}
               {activeTab === "coupons"    && <CouponsTab     {...tabProps} />}
               {activeTab === "newsletter" && <NewsletterTab  {...tabProps} />}
+              {activeTab === "trending"   && <TrendingBannersTab {...tabProps} />}
+              {activeTab === "gifts"      && <GiftSectionTab {...tabProps} />}
+              {activeTab === "lookbook"   && <LookbookTab    {...tabProps} />}
             </motion.div>
           </AnimatePresence>
         </div>

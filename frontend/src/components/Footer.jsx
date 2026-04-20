@@ -110,34 +110,18 @@ export default function Footer() {
           </p>
         </div>
 
-        {/* Developer credit — always visible */}
+        {/* Copyright only */}
         <div style={{
           borderTop: `1px solid ${theme.colors.background === '#fff' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
           paddingTop: 20,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          gap: 12,
+          textAlign: 'center',
         }}>
-          <div style={{ height: 1, flex: 1, background: theme.colors.background === '#fff' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
           <p style={{
-            fontSize: 11,
-            fontWeight: 500,
-            letterSpacing: '0.18em',
-            textTransform: 'uppercase',
-            color: theme.colors.background === '#fff' ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.55)',
-            whiteSpace: 'nowrap',
+            fontSize: 11, color: theme.colors.background === '#fff' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+            letterSpacing: '0.1em',
           }}>
-            Developed by
-            <span style={{
-              marginLeft: 8,
-              fontWeight: 700,
-              letterSpacing: '0.12em',
-              color: theme.colors.background === '#fff' ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.85)',
-              fontSize: 12,
-            }}>
-              Navneet Kumar Saini
-            </span>
+            © {BRAND.year} {BRAND.name}. All rights reserved.
           </p>
-          <div style={{ height: 1, flex: 1, background: theme.colors.background === '#fff' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
         </div>
       </div>
     </footer>

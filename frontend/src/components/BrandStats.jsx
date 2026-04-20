@@ -1,6 +1,7 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { getAdminStats } from '../api/api';
 
 function CountUp({ to, suffix = '' }) {
   const [count, setCount] = useState(0);
@@ -8,7 +9,7 @@ function CountUp({ to, suffix = '' }) {
   const inView = useInView(ref, { once: true });
 
   useEffect(() => {
-    if (!inView) return;
+    if (!inView || !to) return;
     let start = 0;
     const duration = 1800;
     const step = Math.ceil(to / (duration / 16));
@@ -23,15 +24,28 @@ function CountUp({ to, suffix = '' }) {
   return <span ref={ref}>{count.toLocaleString()}{suffix}</span>;
 }
 
-const STATS = [
-  { value: 50000, suffix: '+', label: 'Happy Customers' },
-  { value: 1200, suffix: '+', label: 'Products' },
-  { value: 98, suffix: '%', label: 'Satisfaction Rate' },
-  { value: 500, suffix: '+', label: 'Cities Delivered' },
-];
-
 export default function BrandStats() {
   const { theme } = useTheme();
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    // Try to get real stats, fallback to defaults if not admin
+    getAdminStats()
+      .then(res => setStats(res.data))
+      .catch(() => setStats(null)); // not admin - use defaults
+  }, []);
+
+  const STATS = stats ? [
+    { value: stats.totalUsers || 0, suffix: '+', label: 'Happy Customers' },
+    { value: stats.totalProducts || 0, suffix: '+', label: 'Products' },
+    { value: stats.totalOrders || 0, suffix: '+', label: 'Orders Placed' },
+    { value: Math.round((stats.totalRevenue || 0) / 1000), suffix: 'K+', label: 'Revenue (₹)' },
+  ] : [
+    { value: 500, suffix: '+', label: 'Happy Customers' },
+    { value: 34, suffix: '+', label: 'Products' },
+    { value: 98, suffix: '%', label: 'Satisfaction Rate' },
+    { value: 50, suffix: '+', label: 'Cities Delivered' },
+  ];
 
   return (
     <section style={{

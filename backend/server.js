@@ -25,6 +25,8 @@ app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/spin-wheel', require('./routes/spinWheel'));
 app.use('/api/view-history', require('./routes/viewHistory'));
 app.use('/api/wishlist-collections', require('./routes/wishlistCollections'));
+app.use('/api/payment', require('./routes/payment'));
+app.use('/api/settings', require('./routes/siteSettings'));
 
 // Connect to MongoDB and start server
 const PORT = process.env.PORT || 5000;
