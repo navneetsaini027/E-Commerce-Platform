@@ -410,7 +410,11 @@ function AppContent() {
       <main>
         <Hero onShopCategory={openCategory} />
         <Marquee />
-        <DiscountStrip />
+        <DiscountStrip onCouponApply={(code) => {
+          // Store applied coupon for checkout
+          localStorage.setItem('appliedCoupon', code);
+          toast.success(`Coupon ${code} applied! Use it at checkout 🎉`);
+        }} />
         <TrendingSection onCategoryChange={setActiveCategory} onShopCategory={openCategory} />
         <SeasonSaleBanner onShopCategory={openCategory} />
         {loading ? (
