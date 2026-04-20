@@ -167,7 +167,7 @@ function OrdersTab({ toast }) {
 }
 
 const PCATS = CATEGORIES.filter(c => c !== "All");
-const emptyForm = { name: "", price: "", memberPrice: "", category: PCATS[0] || "", image: "", images: [], stock: "50", description: "" };
+const emptyForm = { name: "", price: "", memberPrice: "", category: PCATS[0] || "", image: "", images: [], colorVariants: [], stock: "50", description: "" };
 
 function ProductsTab({ toast }) {
   const [products, setProducts] = useState([]);
@@ -200,7 +200,7 @@ function ProductsTab({ toast }) {
   };
   const handleEditOpen = (p) => {
     setEditProduct(p);
-    setEditForm({ name: p.name||"", price: p.price||"", memberPrice: p.memberPrice||"", category: p.category||PCATS[0], image: p.image||"", images: p.images||[], stock: p.stock||0, description: p.description||"" });
+    setEditForm({ name: p.name||"", price: p.price||"", memberPrice: p.memberPrice||"", category: p.category||PCATS[0], image: p.image||"", images: p.images||[], colorVariants: p.colorVariants||[], stock: p.stock||0, description: p.description||"" });
     setNewEditImageUrl("");
   };
   const handleEditSave = async () => {
@@ -255,6 +255,29 @@ function ProductsTab({ toast }) {
                   </div>
                 )}
               </div>
+
+              {/* Color Variants */}
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>
+                  Colour Variants (Max 5) — for products available in multiple colours
+                </label>
+                {(form.colorVariants || []).map((cv, i) => (
+                  <div key={i} style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8, background: "#f8f8f8", padding: "10px 12px", borderRadius: 8 }}>
+                    <input placeholder="Colour name (e.g. Brown)" style={{ ...inp, flex: 1 }} value={cv.color} onChange={e => { const updated = [...form.colorVariants]; updated[i] = { ...updated[i], color: e.target.value }; setForm(p => ({ ...p, colorVariants: updated })); }} />
+                    <input type="color" value={cv.colorCode || '#000000'} onChange={e => { const updated = [...form.colorVariants]; updated[i] = { ...updated[i], colorCode: e.target.value }; setForm(p => ({ ...p, colorVariants: updated })); }}
+                      style={{ width: 40, height: 36, border: "1px solid #ddd", borderRadius: 6, cursor: "pointer", padding: 2 }} title="Pick colour" />
+                    <ImageUploader label="" value={cv.image} onChange={url => { const updated = [...form.colorVariants]; updated[i] = { ...updated[i], image: url }; setForm(p => ({ ...p, colorVariants: updated })); }} />
+                    <button type="button" onClick={() => setForm(p => ({ ...p, colorVariants: p.colorVariants.filter((_,idx) => idx !== i) }))}
+                      style={{ background: "#FFEBEE", color: "#B71C1C", border: "none", borderRadius: 6, padding: "6px 10px", cursor: "pointer", fontSize: 12, whiteSpace: "nowrap" }}>Remove</button>
+                  </div>
+                ))}
+                {(!form.colorVariants || form.colorVariants.length < 5) && (
+                  <button type="button" onClick={() => setForm(p => ({ ...p, colorVariants: [...(p.colorVariants||[]), { color: "", colorCode: "#000000", image: "", stock: 10 }] }))}
+                    style={{ marginTop: 8, background: "#E8F5E9", color: "#1B5E20", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
+                    + Add Colour Variant ({(form.colorVariants||[]).length}/5)
+                  </button>
+                )}
+              </div>
             </div>
             <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
               <button type="submit" disabled={adding} style={{ background: "#1a1a2e", color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>{adding ? "Adding..." : "Add Product"}</button>
@@ -306,6 +329,27 @@ function ProductsTab({ toast }) {
                         </div>
                       ))}
                     </div>
+                  )}
+                </div>
+
+                {/* Edit Color Variants */}
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Colour Variants (Max 5)</label>
+                  {(editForm.colorVariants || []).map((cv, i) => (
+                    <div key={i} style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8, background: "#f8f8f8", padding: "10px 12px", borderRadius: 8 }}>
+                      <input placeholder="Colour name" style={{ ...inp, flex: 1 }} value={cv.color} onChange={e => { const updated = [...editForm.colorVariants]; updated[i] = { ...updated[i], color: e.target.value }; setEditForm(p => ({ ...p, colorVariants: updated })); }} />
+                      <input type="color" value={cv.colorCode || '#000000'} onChange={e => { const updated = [...editForm.colorVariants]; updated[i] = { ...updated[i], colorCode: e.target.value }; setEditForm(p => ({ ...p, colorVariants: updated })); }}
+                        style={{ width: 40, height: 36, border: "1px solid #ddd", borderRadius: 6, cursor: "pointer", padding: 2 }} />
+                      <ImageUploader label="" value={cv.image} onChange={url => { const updated = [...editForm.colorVariants]; updated[i] = { ...updated[i], image: url }; setEditForm(p => ({ ...p, colorVariants: updated })); }} />
+                      <button type="button" onClick={() => setEditForm(p => ({ ...p, colorVariants: p.colorVariants.filter((_,idx) => idx !== i) }))}
+                        style={{ background: "#FFEBEE", color: "#B71C1C", border: "none", borderRadius: 6, padding: "6px 10px", cursor: "pointer", fontSize: 12 }}>Remove</button>
+                    </div>
+                  ))}
+                  {(!editForm.colorVariants || editForm.colorVariants.length < 5) && (
+                    <button type="button" onClick={() => setEditForm(p => ({ ...p, colorVariants: [...(p.colorVariants||[]), { color: "", colorCode: "#000000", image: "", stock: 10 }] }))}
+                      style={{ marginTop: 8, background: "#E8F5E9", color: "#1B5E20", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
+                      + Add Colour ({(editForm.colorVariants||[]).length}/5)
+                    </button>
                   )}
                 </div>
               </div>

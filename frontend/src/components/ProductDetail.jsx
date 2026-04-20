@@ -7,9 +7,18 @@ const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
 export default function ProductDetail({ product, onClose, onAddToCart, onAddToWishlist, onOpenReview, user }) {
   const [selectedSize, setSelectedSize] = useState('');
+  const [selectedColor, setSelectedColor] = useState(null);
   const [wishlisted, setWishlisted] = useState(false);
   const [added, setAdded] = useState(false);
   const [sizeError, setSizeError] = useState(false);
+  const [colorError, setColorError] = useState(false);
+
+  const hasColors = product?.colorVariants && product.colorVariants.length > 0;
+
+  // Set default color
+  useState(() => {
+    if (hasColors && !selectedColor) setSelectedColor(product.colorVariants[0]);
+  });
 
   if (!product) return null;
 
@@ -23,7 +32,18 @@ export default function ProductDetail({ product, onClose, onAddToCart, onAddToWi
       setTimeout(() => setSizeError(false), 2000);
       return;
     }
-    onAddToCart({ ...product, selectedSize });
+    if (hasColors && !selectedColor) {
+      setColorError(true);
+      setTimeout(() => setColorError(false), 2000);
+      return;
+    }
+    const productToAdd = {
+      ...product,
+      selectedSize,
+      selectedColor: selectedColor?.color || null,
+      image: selectedColor?.image || product.image,
+    };
+    onAddToCart(productToAdd);
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
   };
@@ -70,7 +90,11 @@ export default function ProductDetail({ product, onClose, onAddToCart, onAddToWi
             {/* Left - Image Gallery */}
             <div style={{ position: 'relative', aspectRatio: '3/4', background: '#f5f5f5' }}>
               <ImageGallery 
-                images={product.images && product.images.length > 0 ? product.images : [product.image]}
+                images={
+                  hasColors && selectedColor
+                    ? [selectedColor.image, ...product.colorVariants.filter(cv => cv.color !== selectedColor.color).map(cv => cv.image)]
+                    : product.images && product.images.length > 0 ? product.images : [product.image]
+                }
                 productName={product.name}
               />
               {discount && (
@@ -142,6 +166,29 @@ export default function ProductDetail({ product, onClose, onAddToCart, onAddToWi
               <p style={{ fontSize: 14, color: '#444', lineHeight: 1.7, marginBottom: 28 }}>
                 {product.description || `Premium quality ${product.category.toLowerCase()} crafted with finest materials. Perfect for all occasions. Easy care and long lasting fabric.`}
               </p>
+
+              {/* Color Selection */}
+              {hasColors && (
+                <div style={{ marginBottom: 28 }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12, color: colorError ? '#E50010' : '#000' }}>
+                    {colorError ? 'Please select a colour' : `Colour: ${selectedColor?.color || 'Select'}`}
+                  </p>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    {product.colorVariants.map((cv, i) => (
+                      <button key={i} onClick={() => { setSelectedColor(cv); setColorError(false); }}
+                        title={cv.color}
+                        style={{
+                          width: 36, height: 36, borderRadius: '50%',
+                          background: cv.colorCode || '#ccc',
+                          border: selectedColor?.color === cv.color ? '3px solid #E50010' : '3px solid transparent',
+                          outline: selectedColor?.color === cv.color ? '2px solid #E50010' : '2px solid #ddd',
+                          cursor: 'pointer', padding: 0, transition: 'all 0.2s',
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Size Selection */}
               <div style={{ marginBottom: 28 }}>
