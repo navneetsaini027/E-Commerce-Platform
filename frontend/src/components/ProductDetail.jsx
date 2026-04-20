@@ -115,7 +115,8 @@ export default function ProductDetail({ product, onClose, onAddToCart, onAddToWi
               {/* Close button */}
               <button
                 onClick={onClose}
-                style={{ position: 'absolute', top: 16, right: 16, padding: 8, zIndex: 10 }}
+                className="product-detail-close"
+                style={{ position: 'absolute', top: 16, right: 16, padding: 8, zIndex: 10, background: 'none', border: 'none', cursor: 'pointer' }}
               >
                 <X size={20} />
               </button>
@@ -361,6 +362,21 @@ export default function ProductDetail({ product, onClose, onAddToCart, onAddToWi
                 width: 100vw !important;
                 max-height: 100vh !important;
                 border-radius: 0 !important;
+                overflow-y: auto !important;
+              }
+              .product-detail-close {
+                position: fixed !important;
+                top: 12px !important;
+                right: 12px !important;
+                z-index: 1500 !important;
+                background: rgba(255,255,255,0.95) !important;
+                border-radius: 50% !important;
+                width: 36px !important;
+                height: 36px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
               }
             }
           `}</style>

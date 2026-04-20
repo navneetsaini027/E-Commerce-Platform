@@ -38,11 +38,16 @@ export default function ImageUploader({ value, onChange, label = "Image" }) {
         { method: 'POST', body: formData }
       );
 
-      if (!response.ok) throw new Error('Upload failed');
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        console.error('Cloudinary error:', errData);
+        throw new Error(errData.error?.message || 'Upload failed');
+      }
       const data = await response.json();
       onChange(data.secure_url);
     } catch (err) {
-      setError('Upload failed. Please check Cloudinary settings or use URL instead.');
+      console.error('Upload error:', err);
+      setError(`Upload failed: ${err.message}. Check Cloudinary preset or use URL instead.`);
     } finally {
       setUploading(false);
     }

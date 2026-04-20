@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, Heart, Star, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
@@ -10,14 +10,43 @@ export default function ProductCard({ product, onAddToCart, onAddToWishlist, onP
   const [imageError, setImageError] = useState(false);
   const [activeColorIdx, setActiveColorIdx] = useState(0);
   const [slideDir, setSlideDir] = useState(1);
+  const autoSlideRef = useRef(null);
   const { theme } = useTheme();
 
-  const hasColors = product.colorVariants && product.colorVariants.length > 0;
-  const activeColor = hasColors ? product.colorVariants[activeColorIdx] : null;
+  const hasColors = product.colorVariants && product.colorVariants.length > 1;
+  const activeColor = product.colorVariants && product.colorVariants.length > 0
+    ? product.colorVariants[activeColorIdx]
+    : null;
   const displayImage = activeColor ? activeColor.image : product.image;
+
+  // Auto slide every 2 seconds when has colors
+  useEffect(() => {
+    if (!hasColors) return;
+    autoSlideRef.current = setInterval(() => {
+      setSlideDir(1);
+      setActiveColorIdx(prev => (prev + 1) % product.colorVariants.length);
+      setImageError(false);
+    }, 2000);
+    return () => clearInterval(autoSlideRef.current);
+  }, [hasColors, product.colorVariants?.length]);
+
+  // Pause auto slide on hover
+  useEffect(() => {
+    if (hovered) {
+      clearInterval(autoSlideRef.current);
+    } else if (hasColors) {
+      autoSlideRef.current = setInterval(() => {
+        setSlideDir(1);
+        setActiveColorIdx(prev => (prev + 1) % product.colorVariants.length);
+        setImageError(false);
+      }, 2000);
+    }
+    return () => clearInterval(autoSlideRef.current);
+  }, [hovered, hasColors, product.colorVariants?.length]);
 
   const handleColorChange = (e, idx) => {
     e.stopPropagation();
+    clearInterval(autoSlideRef.current);
     setSlideDir(idx > activeColorIdx ? 1 : -1);
     setActiveColorIdx(idx);
     setImageError(false);
@@ -25,6 +54,7 @@ export default function ProductCard({ product, onAddToCart, onAddToWishlist, onP
 
   const handlePrev = (e) => {
     e.stopPropagation();
+    clearInterval(autoSlideRef.current);
     const newIdx = (activeColorIdx - 1 + product.colorVariants.length) % product.colorVariants.length;
     setSlideDir(-1);
     setActiveColorIdx(newIdx);
@@ -33,6 +63,7 @@ export default function ProductCard({ product, onAddToCart, onAddToWishlist, onP
 
   const handleNext = (e) => {
     e.stopPropagation();
+    clearInterval(autoSlideRef.current);
     const newIdx = (activeColorIdx + 1) % product.colorVariants.length;
     setSlideDir(1);
     setActiveColorIdx(newIdx);
@@ -117,17 +148,26 @@ export default function ProductCard({ product, onAddToCart, onAddToWishlist, onP
           </div>
         )}
 
-        {/* Color slide arrows - show on hover if has colors */}
-        {hasColors && product.colorVariants.length > 1 && hovered && (
+        {/* Color slide arrows - show on hover (desktop) or always (mobile) */}
+        {hasColors && product.colorVariants.length > 1 && (
           <>
             <button onClick={handlePrev}
-              style={{ position: 'absolute', left: 6, top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.9)', border: 'none', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
+              className="color-arrow color-arrow-left"
+              style={{ position: 'absolute', left: 6, top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.9)', border: 'none', borderRadius: '50%', width: 28, height: 28, display: hovered ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
               <ChevronLeft size={14} color="#000" />
             </button>
             <button onClick={handleNext}
-              style={{ position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.9)', border: 'none', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
+              className="color-arrow color-arrow-right"
+              style={{ position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.9)', border: 'none', borderRadius: '50%', width: 28, height: 28, display: hovered ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
               <ChevronRight size={14} color="#000" />
             </button>
+            {/* Slide indicator dots */}
+            <div style={{ position: 'absolute', bottom: 44, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 4, zIndex: 3 }}>
+              {product.colorVariants.map((_, i) => (
+                <div key={i} onClick={(e) => handleColorChange(e, i)}
+                  style={{ width: i === activeColorIdx ? 16 : 6, height: 6, borderRadius: 3, background: i === activeColorIdx ? '#fff' : 'rgba(255,255,255,0.5)', transition: 'all 0.3s', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }} />
+              ))}
+            </div>
           </>
         )}
 
@@ -219,6 +259,12 @@ export default function ProductCard({ product, onAddToCart, onAddToWishlist, onP
           </div>
         )}
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .color-arrow { display: flex !important; }
+        }
+      `}</style>
     </motion.div>
   );
 }

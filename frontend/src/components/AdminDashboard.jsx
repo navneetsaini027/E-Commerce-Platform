@@ -5,6 +5,7 @@ import { getAdminStats, getAdminOrders, updateOrderStatus, getAdminUsers, update
 import { useTheme } from "../contexts/ThemeContext";
 import { CATEGORIES } from "../data/products";
 import ImageUploader from "./ImageUploader";
+import ColorVariantUploader from "./ColorVariantUploader";
 
 const STATUS_COLORS = {
   pending:    { bg: "#FFF3E0", text: "#E65100", border: "#FFB74D" },
@@ -237,46 +238,37 @@ function ProductsTab({ toast }) {
                 <ImageUploader label="Main Image *" value={form.image} onChange={url => setForm(p => ({ ...p, image: url }))} />
               </div>
               <div style={{ gridColumn: "1 / -1" }}>
-                <label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Additional Images</label>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Additional Images (Max 5)</label>
                 <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
-                  <input style={{ ...inp, flex: 1 }} value={newImageUrl} onChange={e => setNewImageUrl(e.target.value)} placeholder="Paste image URL and click Add" />
-                  <button type="button" onClick={() => { if (newImageUrl.trim()) { setForm(p => ({ ...p, images: [...(p.images||[]), newImageUrl.trim()] })); setNewImageUrl(""); } }}
-                    style={{ background: "#1a1a2e", color: "#fff", border: "none", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontSize: 12, whiteSpace: "nowrap" }}>+ Add</button>
+                  <input style={{ ...inp, flex: 1 }} value={newImageUrl} onChange={e => setNewImageUrl(e.target.value)} placeholder="Paste image URL and click Add" disabled={(form.images||[]).length >= 5} />
+                  <button type="button"
+                    onClick={() => { if (newImageUrl.trim() && (form.images||[]).length < 5) { setForm(p => ({ ...p, images: [...(p.images||[]), newImageUrl.trim()] })); setNewImageUrl(""); } }}
+                    disabled={(form.images||[]).length >= 5}
+                    style={{ background: (form.images||[]).length >= 5 ? "#ccc" : "#1a1a2e", color: "#fff", border: "none", borderRadius: 8, padding: "8px 14px", cursor: (form.images||[]).length >= 5 ? "not-allowed" : "pointer", fontSize: 12, whiteSpace: "nowrap" }}>
+                    + Add ({(form.images||[]).length}/5)
+                  </button>
                 </div>
                 {form.images && form.images.length > 0 && (
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
                     {form.images.map((img, i) => (
                       <div key={i} style={{ position: "relative" }}>
-                        <img src={img} alt="" style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 6, border: "1px solid #ddd" }} onError={e => e.target.style.display="none"} />
+                        <img src={img} alt="" style={{ width: 70, height: 70, objectFit: "cover", borderRadius: 8, border: "2px solid #ddd" }} onError={e => e.target.style.display="none"} />
                         <button type="button" onClick={() => setForm(p => ({ ...p, images: p.images.filter((_,idx) => idx !== i) }))}
-                          style={{ position: "absolute", top: -6, right: -6, background: "#E50010", color: "#fff", border: "none", borderRadius: "50%", width: 18, height: 18, cursor: "pointer", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+                          style={{ position: "absolute", top: -6, right: -6, background: "#E50010", color: "#fff", border: "none", borderRadius: "50%", width: 20, height: 20, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>×</button>
                       </div>
                     ))}
                   </div>
                 )}
+                <p style={{ fontSize: 11, color: "#888", marginTop: 6 }}>Or upload from gallery:</p>
+                <ImageUploader label="" value="" onChange={url => { if ((form.images||[]).length < 5) setForm(p => ({ ...p, images: [...(p.images||[]), url] })); }} />
               </div>
 
               {/* Color Variants */}
               <div style={{ gridColumn: "1 / -1" }}>
-                <label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>
-                  Colour Variants (Max 5) — for products available in multiple colours
-                </label>
-                {(form.colorVariants || []).map((cv, i) => (
-                  <div key={i} style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8, background: "#f8f8f8", padding: "10px 12px", borderRadius: 8 }}>
-                    <input placeholder="Colour name (e.g. Brown)" style={{ ...inp, flex: 1 }} value={cv.color} onChange={e => { const updated = [...form.colorVariants]; updated[i] = { ...updated[i], color: e.target.value }; setForm(p => ({ ...p, colorVariants: updated })); }} />
-                    <input type="color" value={cv.colorCode || '#000000'} onChange={e => { const updated = [...form.colorVariants]; updated[i] = { ...updated[i], colorCode: e.target.value }; setForm(p => ({ ...p, colorVariants: updated })); }}
-                      style={{ width: 40, height: 36, border: "1px solid #ddd", borderRadius: 6, cursor: "pointer", padding: 2 }} title="Pick colour" />
-                    <ImageUploader label="" value={cv.image} onChange={url => { const updated = [...form.colorVariants]; updated[i] = { ...updated[i], image: url }; setForm(p => ({ ...p, colorVariants: updated })); }} />
-                    <button type="button" onClick={() => setForm(p => ({ ...p, colorVariants: p.colorVariants.filter((_,idx) => idx !== i) }))}
-                      style={{ background: "#FFEBEE", color: "#B71C1C", border: "none", borderRadius: 6, padding: "6px 10px", cursor: "pointer", fontSize: 12, whiteSpace: "nowrap" }}>Remove</button>
-                  </div>
-                ))}
-                {(!form.colorVariants || form.colorVariants.length < 5) && (
-                  <button type="button" onClick={() => setForm(p => ({ ...p, colorVariants: [...(p.colorVariants||[]), { color: "", colorCode: "#000000", image: "", stock: 10 }] }))}
-                    style={{ marginTop: 8, background: "#E8F5E9", color: "#1B5E20", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
-                    + Add Colour Variant ({(form.colorVariants||[]).length}/5)
-                  </button>
-                )}
+                <ColorVariantUploader
+                  variants={form.colorVariants || []}
+                  onChange={variants => setForm(p => ({ ...p, colorVariants: variants }))}
+                />
               </div>
             </div>
             <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
@@ -313,44 +305,37 @@ function ProductsTab({ toast }) {
                   <ImageUploader label="Main Image" value={editForm.image} onChange={url => setEditForm(p => ({ ...p, image: url }))} />
                 </div>
                 <div style={{ gridColumn: "1 / -1" }}>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Additional Images</label>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Additional Images (Max 5)</label>
                   <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
-                    <input style={{ ...inp, flex: 1 }} value={newEditImageUrl} onChange={e => setNewEditImageUrl(e.target.value)} placeholder="Paste image URL and click Add" />
-                    <button type="button" onClick={() => { if (newEditImageUrl.trim()) { setEditForm(p => ({ ...p, images: [...(p.images||[]), newEditImageUrl.trim()] })); setNewEditImageUrl(""); } }}
-                      style={{ background: "#1a1a2e", color: "#fff", border: "none", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontSize: 12, whiteSpace: "nowrap" }}>+ Add</button>
+                    <input style={{ ...inp, flex: 1 }} value={newEditImageUrl} onChange={e => setNewEditImageUrl(e.target.value)} placeholder="Paste image URL and click Add" disabled={(editForm.images||[]).length >= 5} />
+                    <button type="button"
+                      onClick={() => { if (newEditImageUrl.trim() && (editForm.images||[]).length < 5) { setEditForm(p => ({ ...p, images: [...(p.images||[]), newEditImageUrl.trim()] })); setNewEditImageUrl(""); } }}
+                      disabled={(editForm.images||[]).length >= 5}
+                      style={{ background: (editForm.images||[]).length >= 5 ? "#ccc" : "#1a1a2e", color: "#fff", border: "none", borderRadius: 8, padding: "8px 14px", cursor: (editForm.images||[]).length >= 5 ? "not-allowed" : "pointer", fontSize: 12, whiteSpace: "nowrap" }}>
+                      + Add ({(editForm.images||[]).length}/5)
+                    </button>
                   </div>
                   {editForm.images && editForm.images.length > 0 && (
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
                       {editForm.images.map((img, i) => (
                         <div key={i} style={{ position: "relative" }}>
-                          <img src={img} alt="" style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 6, border: "1px solid #ddd" }} onError={e => e.target.style.display="none"} />
+                          <img src={img} alt="" style={{ width: 70, height: 70, objectFit: "cover", borderRadius: 8, border: "2px solid #ddd" }} onError={e => e.target.style.display="none"} />
                           <button type="button" onClick={() => setEditForm(p => ({ ...p, images: p.images.filter((_,idx) => idx !== i) }))}
-                            style={{ position: "absolute", top: -6, right: -6, background: "#E50010", color: "#fff", border: "none", borderRadius: "50%", width: 18, height: 18, cursor: "pointer", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+                            style={{ position: "absolute", top: -6, right: -6, background: "#E50010", color: "#fff", border: "none", borderRadius: "50%", width: 20, height: 20, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>×</button>
                         </div>
                       ))}
                     </div>
                   )}
+                  <p style={{ fontSize: 11, color: "#888", marginTop: 6 }}>Or upload from gallery:</p>
+                  <ImageUploader label="" value="" onChange={url => { if ((editForm.images||[]).length < 5) setEditForm(p => ({ ...p, images: [...(p.images||[]), url] })); }} />
                 </div>
 
                 {/* Edit Color Variants */}
                 <div style={{ gridColumn: "1 / -1" }}>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Colour Variants (Max 5)</label>
-                  {(editForm.colorVariants || []).map((cv, i) => (
-                    <div key={i} style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8, background: "#f8f8f8", padding: "10px 12px", borderRadius: 8 }}>
-                      <input placeholder="Colour name" style={{ ...inp, flex: 1 }} value={cv.color} onChange={e => { const updated = [...editForm.colorVariants]; updated[i] = { ...updated[i], color: e.target.value }; setEditForm(p => ({ ...p, colorVariants: updated })); }} />
-                      <input type="color" value={cv.colorCode || '#000000'} onChange={e => { const updated = [...editForm.colorVariants]; updated[i] = { ...updated[i], colorCode: e.target.value }; setEditForm(p => ({ ...p, colorVariants: updated })); }}
-                        style={{ width: 40, height: 36, border: "1px solid #ddd", borderRadius: 6, cursor: "pointer", padding: 2 }} />
-                      <ImageUploader label="" value={cv.image} onChange={url => { const updated = [...editForm.colorVariants]; updated[i] = { ...updated[i], image: url }; setEditForm(p => ({ ...p, colorVariants: updated })); }} />
-                      <button type="button" onClick={() => setEditForm(p => ({ ...p, colorVariants: p.colorVariants.filter((_,idx) => idx !== i) }))}
-                        style={{ background: "#FFEBEE", color: "#B71C1C", border: "none", borderRadius: 6, padding: "6px 10px", cursor: "pointer", fontSize: 12 }}>Remove</button>
-                    </div>
-                  ))}
-                  {(!editForm.colorVariants || editForm.colorVariants.length < 5) && (
-                    <button type="button" onClick={() => setEditForm(p => ({ ...p, colorVariants: [...(p.colorVariants||[]), { color: "", colorCode: "#000000", image: "", stock: 10 }] }))}
-                      style={{ marginTop: 8, background: "#E8F5E9", color: "#1B5E20", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
-                      + Add Colour ({(editForm.colorVariants||[]).length}/5)
-                    </button>
-                  )}
+                  <ColorVariantUploader
+                    variants={editForm.colorVariants || []}
+                    onChange={variants => setEditForm(p => ({ ...p, colorVariants: variants }))}
+                  />
                 </div>
               </div>
               <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
